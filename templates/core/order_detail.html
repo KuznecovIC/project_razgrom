@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заявка #{{ order.id }} | Барбершоп "Острый угол"</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/orders.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Детали заявки #{{ order.id }}</h1>
+        <a href="{% url 'orders_list' %}" class="home-btn">← К списку заявок</a>
+    </header>
+
+    <section class="order-detail-container">
+        <div class="order-detail-card status-{{ order.status|slugify }}">
+            <div class="order-header">
+                <h2>Заявка #{{ order.id }}</h2>
+                <span class="order-status {{ order.status|slugify }}">{{ order.status }}</span>
+            </div>
+            
+            <div class="order-info">
+                <div class="info-block">
+                    <h3>Основная информация</h3>
+                    <p><strong>Дата:</strong> {{ order.date }}</p>
+                    <p><strong>Клиент:</strong> {{ order.client_name }}</p>
+                    <p><strong>Телефон:</strong> {{ order.phone|default:"Не указан" }}</p>
+                </div>
+                
+                <div class="info-block">
+                    <h3>Услуги</h3>
+                    <ul class="services-list">
+                        {% for service in order.services %}
+                        <li>{{ service }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p><strong>Общая стоимость:</strong> {{ order.total_price }} ₽</p>
+                </div>
+                
+                <div class="info-block">
+                    <h3>Мастер</h3>
+                    <div class="master-info">
+                        {% for master in masters %}
+                            {% if master.id == order.master_id %}
+                            <div class="master-photo" style="background-image: url('{% static 'images/masters/master' %}{{ master.id }}.webp')"></div>
+                            <div class="master-details">
+                                <p><strong>{{ master.name }}</strong></p>
+                                <p>Стаж: {{ master.experience }} лет</p>
+                                <p>Рейтинг: ★★★★☆</p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-actions">
+                <button class="btn-change-status" data-order="{{ order.id }}">Изменить статус</button>
+                <a href="{% url 'orders_list' %}" class="btn-back">Назад к списку</a>
+            </div>
+        </div>
+    </section>
+
+    <script src="{% static 'js/orders.js' %}"></script>
+</body>
+</html>

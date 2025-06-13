@@ -1,0 +1,32 @@
+# Django
+*.sqlite3
+*.pyc
+__pycache__/
+migrations/
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Static files
+staticfiles/
+/media/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Poetry
+poetry.lock
+pyproject.toml
+
+# Database
+*.db

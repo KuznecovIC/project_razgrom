@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Спасибо за запись!</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Барбершоп "Острый угол"</h1>
+    </header>
+
+    <section class="thank-you-message">
+        <h2>Спасибо за вашу заявку!</h2>
+        <p>Мы уже получили ваши данные и свяжемся с вами в течение 30 минут для подтверждения записи.</p>
+        <p>Номер вашей заявки: #{{ order_id }}</p>
+        <a href="/" class="home-btn">Вернуться на главную</a>
+    </section>
+
+    <style>
+    .thank-you-message {
+        text-align: center;
+        max-width: 600px;
+        margin: 50px auto;
+    }
+    
+    .home-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #e67e22;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    </style>
+</body>
+</html>

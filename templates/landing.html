@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Барбершоп "Острый угол"</title>
+    <link rel="icon" href="{% static 'images/favicon.webp' %}" type="image/webp">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Барбершоп "Острый угол"</h1>
+        <button id="themeToggle">🌓</button>
+    </header>
+    
+    <section class="booking">
+        <h2>Записаться онлайн</h2>
+        <form method="post" action="{% url 'thanks' %}">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="Ваше имя" required>
+            <input type="tel" name="phone" placeholder="Телефон" required>
+            <select name="service">
+                {% for service in services %}
+                <option value="{{ service }}">{{ service }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date" required>
+            <button type="submit">Записаться</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Наши мастера</h2>
+        <div class="masters-grid">
+            {% for master in masters %}
+            <div class="master-card">
+                <div class="master-photo" style="background-image: url('{% static 'images/masters/master' %}{{ master.id }}.webp')"></div>
+                <h3>{{ master.name }}</h3>
+                <p>Стаж: {{ master.experience }} лет</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    
+    <section class="services-interactive">
+        <h2>Наши услуги</h2>
+        <div class="services-grid">
+            {% for service in services %}
+            <div class="service-card">
+                <h3>{{ service }}</h3>
+                <p class="price">{{ service.price }} ₽</p>
+                <button class="book-btn" data-service="{{ service }}">Записаться</button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="gallery">
+        <h2>Наши работы</h2>
+        <div class="gallery-grid">
+            {% for i in "1234" %}
+            <img src="{% static 'images/gallery/' %}{{ i }}.webp" alt="Пример работы {{ i }}">
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="reviews">
+        <h2>Отзывы клиентов</h2>
+        <div class="slider">
+            <div class="slide active">
+                <p>"Лучшая стрижка в городе!"</p>
+                <span>- Иван Петров</span>
+            </div>
+            <div class="slide">
+                <p>"Мастера - настоящие профессионалы"</p>
+                <span>- Ольга Сидорова</span>
+            </div>
+            <button class="prev">←</button>
+            <button class="next">→</button>
+        </div>
+    </section>
+
+    <div class="loader"></div>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

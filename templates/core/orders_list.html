@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление заявками | Барбершоп "Острый угол"</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/orders.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Управление заявками</h1>
+        <a href="/" class="home-btn">← На главную</a>
+    </header>
+
+    <section class="orders-container">
+        <div class="orders-header">
+            <h2>Все заявки</h2>
+            <div class="filters">
+                <select id="status-filter">
+                    <option value="all">Все статусы</option>
+                    <option value="новая">Новые</option>
+                    <option value="подтвержденная">Подтвержденные</option>
+                    <option value="выполненная">Выполненные</option>
+                    <option value="отмененная">Отмененные</option>
+                </select>
+                <button id="refresh-btn">🔄 Обновить</button>
+            </div>
+        </div>
+
+        <div class="orders-list">
+            {% for order in orders %}
+            <div class="order-card status-{{ order.status|slugify }}">
+                <div class="order-main">
+                    <h3>Заявка #{{ order.id }}</h3>
+                    <span class="order-date">{{ order.date }}</span>
+                    <span class="order-status {{ order.status|slugify }}">{{ order.status }}</span>
+                </div>
+                <div class="order-details">
+                    <p><strong>Клиент:</strong> {{ order.client_name }}</p>
+                    <p><strong>Услуги:</strong> {{ order.services|join:", " }}</p>
+                    <p><strong>Мастер:</strong> 
+                        {% for master in masters %}
+                            {% if master.id == order.master_id %}{{ master.name }}{% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+                <div class="order-actions">
+                    <a href="{% url 'order_detail' order.id %}" class="btn-details">Подробнее</a>
+                    <button class="btn-edit" data-order="{{ order.id }}">Изменить</button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-orders">
+                <p>Нет доступных заявок</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <script src="{% static 'js/orders.js' %}"></script>
+</body>
+</html>
