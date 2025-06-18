@@ -1,88 +1,226 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Барбершоп "Острый угол"</title>
-    <link rel="icon" href="{% static 'images/favicon.webp' %}" type="image/webp">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <header>
-        <h1>Барбершоп "Острый угол"</h1>
-        <button id="themeToggle">🌓</button>
-    </header>
-    
-    <section class="booking">
-        <h2>Записаться онлайн</h2>
-        <form method="post" action="{% url 'thanks' %}">
-            {% csrf_token %}
-            <input type="text" name="name" placeholder="Ваше имя" required>
-            <input type="tel" name="phone" placeholder="Телефон" required>
-            <select name="service">
-                {% for service in services %}
-                <option value="{{ service }}">{{ service }}</option>
-                {% endfor %}
-            </select>
-            <input type="date" name="date" required>
-            <button type="submit">Записаться</button>
-        </form>
-    </section>
 
-    <section>
-        <h2>Наши мастера</h2>
-        <div class="masters-grid">
-            {% for master in masters %}
-            <div class="master-card">
-                <div class="master-photo" style="background-image: url('{% static 'images/masters/master' %}{{ master.id }}.webp')"></div>
-                <h3>{{ master.name }}</h3>
-                <p>Стаж: {{ master.experience }} лет</p>
-            </div>
-            {% endfor %}
+{% block title %}Барбершоп "Острый угол" - Запись{% endblock %}
+
+{% block content %}
+
+<!-- Секция "О нас" -->
+<section id="about" class="container py-5 fade-in">
+  <h2>О нас</h2>
+  <p>Добро пожаловать в барбершоп "Острый угол" — стиль, качество и внимание к деталям.</p>
+</section>
+
+<!-- Секция "Цитата" -->
+<section class="container text-center my-5 fade-in">
+  <blockquote class="blockquote">
+    <p class="fs-4 fst-italic">"Барбершоп — это не просто стрижка. Это стиль жизни, уверенность и уважение к себе."</p>
+    <footer class="blockquote-footer mt-3">Команда "Острый угол"</footer>
+  </blockquote>
+</section>
+
+<!-- Секция "Мастера" -->
+<section id="masters" class="container py-5 bg-light fade-in">
+  <h2 class="text-center mb-5">Наши мастера</h2>
+  <div class="row">
+    {% for master in masters %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 border-0 shadow">
+        <div class="card-img-top overflow-hidden" style="height: 300px;">
+          {% if master.photo %}
+            <img src="{{ master.photo.url }}" class="img-fluid w-100 h-100 object-fit-cover" alt="{{ master.name }}">
+          {% else %}
+            <img src="{% static 'images/masters/default.jpg' %}" class="img-fluid w-100 h-100 object-fit-cover" alt="Фото мастера">
+          {% endif %}
         </div>
-    </section>
-    
-    <section class="services-interactive">
-        <h2>Наши услуги</h2>
-        <div class="services-grid">
+        <div class="card-body">
+          <h5 class="card-title text-center">{{ master.name }}</h5>
+          <p class="card-text text-center text-muted">{{ master.description }}</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-center">
+          {% if master.instagram %}
+          <a href="https://instagram.com/{{ master.instagram|cut:'@' }}" 
+             class="btn btn-outline-danger btn-sm me-2"
+             target="_blank">
+            <i class="bi bi-instagram me-1"></i> Instagram
+          </a>
+          {% endif %}
+          <a href="#order" class="btn btn-primary btn-sm">Записаться</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Секция "Услуги" -->
+<section id="services" class="container py-5 fade-in">
+  <h2 class="text-center mb-5">Наши услуги</h2>
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card border-0 shadow">
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
             {% for service in services %}
-            <div class="service-card">
-                <h3>{{ service }}</h3>
-                <p class="price">{{ service.price }} ₽</p>
-                <button class="book-btn" data-service="{{ service }}">Записаться</button>
-            </div>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-scissors text-primary fs-5 me-3"></i>
+                <span class="fw-medium">{{ service.name }}</span>
+              </div>
+              <span class="badge bg-primary rounded-pill fs-6">{{ service.price }}₽</span>
+            </li>
             {% endfor %}
+          </ul>
         </div>
-    </section>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <section class="gallery">
-        <h2>Наши работы</h2>
-        <div class="gallery-grid">
-            {% for i in "1234" %}
-            <img src="{% static 'images/gallery/' %}{{ i }}.webp" alt="Пример работы {{ i }}">
-            {% endfor %}
+<!-- Секция "Отзывы клиентов" -->
+<section id="reviews" class="container py-5 fade-in">
+  <h2 class="text-center mb-5">Отзывы клиентов</h2>
+  <div class="row">
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <p class="card-text">"Отличное место! Уютная атмосфера и профессиональные мастера. Прихожу уже третий раз — всегда доволен!"</p>
+          <h6 class="card-subtitle mt-3 text-muted">— Алексей, 32 года</h6>
         </div>
-    </section>
-
-    <section class="reviews">
-        <h2>Отзывы клиентов</h2>
-        <div class="slider">
-            <div class="slide active">
-                <p>"Лучшая стрижка в городе!"</p>
-                <span>- Иван Петров</span>
-            </div>
-            <div class="slide">
-                <p>"Мастера - настоящие профессионалы"</p>
-                <span>- Ольга Сидорова</span>
-            </div>
-            <button class="prev">←</button>
-            <button class="next">→</button>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <p class="card-text">"Стригли сына — он в восторге! Мастер нашёл подход, всё быстро и аккуратно. Спасибо!"</p>
+          <h6 class="card-subtitle mt-3 text-muted">— Наталья, 39 лет</h6>
         </div>
-    </section>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <p class="card-text">"Долго искал своего барбера, и наконец нашёл здесь. Настоящие профи, знают, что делают."</p>
+          <h6 class="card-subtitle mt-3 text-muted">— Дмитрий, 27 лет</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <div class="loader"></div>
-    <script src="{% static 'js/main.js' %}"></script>
-</body>
-</html>
+<!-- Секция "Почему мы" -->
+<section class="container py-5 fade-in">
+  <h2 class="text-center mb-5">Почему мы?</h2>
+  <div class="row text-center">
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 border-0">
+        <div class="card-body">
+          <i class="bi bi-award display-5 text-primary mb-3"></i>
+          <h5>Опытные мастера</h5>
+          <p>Каждый мастер — профессионал с большим опытом и чувством стиля.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 border-0">
+        <div class="card-body">
+          <i class="bi bi-heart-fill display-5 text-danger mb-3"></i>
+          <h5>Подход с душой</h5>
+          <p>Индивидуальный подход к каждому клиенту и атмосфера уюта.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 border-0">
+        <div class="card-body">
+          <i class="bi bi-lightning-charge-fill display-5 text-warning mb-3"></i>
+          <h5>Быстро и качественно</h5>
+          <p>Стрижка и оформление бороды за разумное время и цену.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Секция "Записаться" -->
+<section id="order" class="container py-5 bg-light fade-in">
+  <h2 class="text-center mb-5">Записаться</h2>
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <form method="post" novalidate class="card border-0 shadow p-4">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="mb-3">
+          <label for="{{ form.client_name.id_for_label }}" class="form-label text-dark">Имя</label>
+          {{ form.client_name }}
+          {{ form.client_name.errors }}
+        </div>
+
+        <div class="mb-3">
+          <label for="{{ form.phone.id_for_label }}" class="form-label text-dark">Телефон</label>
+          {{ form.phone }}
+          {{ form.phone.errors }}
+        </div>
+
+        <div class="mb-3">
+          <label for="{{ form.date.id_for_label }}" class="form-label text-dark">Дата и время записи</label>
+          {{ form.date }}
+          {{ form.date.errors }}
+        </div>
+
+        <div class="mb-3">
+          <label for="{{ form.master.id_for_label }}" class="form-label text-dark">Мастер</label>
+          {{ form.master }}
+          {{ form.master.errors }}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-dark">Услуги</label>
+          {{ form.services }}
+          {{ form.services.errors }}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2">Записаться</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Стили для формы записи */
+  #order .card {
+    background-color: #f8f9fa;
+  }
+  #order .form-label {
+    color: #495057;
+    font-weight: 500;
+  }
+  #order .form-control, 
+  #order .form-select {
+    background-color: white;
+    border: 1px solid #ced4da;
+  }
+  
+  /* Темная тема */
+  .dark-theme #order .card {
+    background-color: #2c2c2c;
+  }
+  .dark-theme #order .form-label {
+    color: #e0e0e0 !important;
+  }
+  .dark-theme #order .form-control,
+  .dark-theme #order .form-select {
+    background-color: #1e1e1e !important;
+    border-color: #3a3a3a !important;
+    color: white !important;
+  }
+  
+  /* Стили для статусов */
+  .badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: white !important;
+  }
+</style>
+
+{% endblock %}

@@ -1,0 +1,12 @@
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Заявка #{{ order.id }}</h5>
+        <span class="badge bg-{{ order.status|status_color }}">{{ order.status }}</span>
+    </div>
+    <div class="card-body">
+        <p class="card-text"><strong>Клиент:</strong> {{ order.client_name }}</p>
+        <p class="card-text"><strong>Дата:</strong> {{ order.date }}</p>
+        <p class="card-text"><strong>Услуги:</strong> {{ order.services|join:", " }}</p>
+        <a href="{% url 'order_detail' order.id %}" class="btn btn-primary">Подробнее</a>
+    </div>
+</div>

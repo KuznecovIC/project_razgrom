@@ -1,0 +1,163 @@
+/* === Базовые стили === */
+body {
+  font-family: 'Roboto Condensed', sans-serif;
+  padding-top: 56px;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: #ffffff;
+  color: #212529;
+}
+
+/* Навигация */
+.navbar {
+  background-color: #2c3e50 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Кнопка входа */
+.btn-login {
+  transition: all 0.3s ease;
+  animation: pulse 2s infinite;
+}
+.btn-login:hover {
+  animation: none;
+  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Выпадающее меню пользователя */
+.user-dropdown .dropdown-menu {
+  min-width: 200px;
+}
+.user-dropdown .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Основной контейнер */
+#main-content {
+  transition: all 0.3s ease;
+  min-height: calc(100vh - 56px - 72px);
+  padding: 20px;
+  border-radius: 8px;
+  background-color: white;
+  margin-top: 20px;
+}
+
+/* Карточки */
+.card {
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Секции */
+.bg-light {
+  background-color: #f1f1f1 !important;
+  padding: 2rem;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Заголовки */
+h2 {
+  transition: color 0.3s ease;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+/* Список услуг */
+.list-group-item {
+  background-color: #f8f9fa;
+  color: inherit;
+  border-color: #dee2e6;
+  transition: all 0.3s ease;
+}
+
+/* Иконки */
+.bi {
+  transition: transform 0.3s ease;
+}
+.bi:hover {
+  transform: scale(1.2);
+}
+
+/* Кнопки */
+.btn-outline-primary {
+  transition: all 0.3s ease;
+}
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+/* Футер */
+footer {
+  background-color: #2c3e50 !important;
+  color: white !important;
+}
+
+/* Анимации */
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Тёмная тема === */
+.dark-theme {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+.dark-theme #main-content {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+.dark-theme .card:not(#reviews .card),
+.dark-theme .bg-light:not(#order) {
+  background-color: #2c2c2c !important;
+  color: #ffffff !important;
+}
+.dark-theme .list-group-item:not(#services .list-group-item) {
+  background-color: #2c2c2c;
+  border-color: #3a3a3a;
+}
+.dark-theme h2:not(#order h2):not(#reviews h2) {
+  color: #ffffff;
+}
+.dark-theme #services .list-group-item:hover {
+  background-color: #3a3a3a !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .display-5 {
+    font-size: 2rem;
+  }
+  #order {
+    padding: 1rem !important;
+  }
+  .card {
+    margin-bottom: 15px;
+  }
+  .navbar-collapse {
+    padding-top: 1rem;
+  }
+}

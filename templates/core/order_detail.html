@@ -1,68 +1,50 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Заявка #{{ order.id }} | Барбершоп "Острый угол"</title>
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'css/orders.css' %}">
-</head>
-<body>
-    <header>
-        <h1>Детали заявки #{{ order.id }}</h1>
-        <a href="{% url 'orders_list' %}" class="home-btn">← К списку заявок</a>
-    </header>
 
-    <section class="order-detail-container">
-        <div class="order-detail-card status-{{ order.status|slugify }}">
-            <div class="order-header">
-                <h2>Заявка #{{ order.id }}</h2>
-                <span class="order-status {{ order.status|slugify }}">{{ order.status }}</span>
-            </div>
+{% block content %}
+<div class="container py-5">
+    <h2>Детали записи #{{ order.id }}</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Клиент:</strong> {{ order.client_name }}</p>
+            <p><strong>Телефон:</strong> {{ order.phone }}</p>
+            <p><strong>Мастер:</strong> {{ order.master.name }}</p>
+            <p><strong>Дата:</strong> {{ order.date }}</p>
+            <p><strong>Статус:</strong> 
+                <span class="badge 
+                    {% if order.status == 'new' %}bg-secondary text-white
+                    {% elif order.status == 'confirmed' %}bg-primary
+                    {% elif order.status == 'completed' %}bg-success
+                    {% else %}bg-danger{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </p>
             
-            <div class="order-info">
-                <div class="info-block">
-                    <h3>Основная информация</h3>
-                    <p><strong>Дата:</strong> {{ order.date }}</p>
-                    <p><strong>Клиент:</strong> {{ order.client_name }}</p>
-                    <p><strong>Телефон:</strong> {{ order.phone|default:"Не указан" }}</p>
-                </div>
-                
-                <div class="info-block">
-                    <h3>Услуги</h3>
-                    <ul class="services-list">
-                        {% for service in order.services %}
-                        <li>{{ service }}</li>
-                        {% endfor %}
-                    </ul>
-                    <p><strong>Общая стоимость:</strong> {{ order.total_price }} ₽</p>
-                </div>
-                
-                <div class="info-block">
-                    <h3>Мастер</h3>
-                    <div class="master-info">
-                        {% for master in masters %}
-                            {% if master.id == order.master_id %}
-                            <div class="master-photo" style="background-image: url('{% static 'images/masters/master' %}{{ master.id }}.webp')"></div>
-                            <div class="master-details">
-                                <p><strong>{{ master.name }}</strong></p>
-                                <p>Стаж: {{ master.experience }} лет</p>
-                                <p>Рейтинг: ★★★★☆</p>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+            <h5 class="mt-4">Услуги:</h5>
+            <ul class="list-group">
+                {% for service in order.services.all %}
+                <li class="list-group-item text-secondary">
+                    {{ service.name }} - {{ service.price }}₽
+                </li>
+                {% endfor %}
+            </ul>
             
-            <div class="order-actions">
-                <button class="btn-change-status" data-order="{{ order.id }}">Изменить статус</button>
-                <a href="{% url 'orders_list' %}" class="btn-back">Назад к списку</a>
+            <div class="mt-4 d-flex gap-3">
+                <a href="{% url 'order_edit' order_id=order.id %}" class="btn btn-primary flex-grow-1">Редактировать</a>
+                <a href="{% url 'order_delete' order_id=order.id %}" class="btn btn-danger flex-grow-1">Удалить</a>
+                <a href="{% url 'orders_list' %}" class="btn btn-secondary flex-grow-1">Назад к списку</a>
             </div>
         </div>
-    </section>
+    </div>
+</div>
 
-    <script src="{% static 'js/orders.js' %}"></script>
-</body>
-</html>
+<style>
+    .list-group-item.text-secondary {
+        color: #6c757d !important;
+    }
+    .btn-flex {
+        flex: 1;
+        margin: 0 5px;
+    }
+</style>
+{% endblock %}
