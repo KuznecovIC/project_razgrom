@@ -1,26 +1,43 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %}  <!-- Наследуем основной шаблон -->
+{% load static %}  <!-- Подключаем статические файлы -->
 
-{% block content %}
+{% block content %}  <!-- Начало блока контента -->
 <section class="container thank-you-message text-center mt-5">
+    <!-- Заголовок подтверждения -->
     <h2>Спасибо за вашу заявку!</h2>
+    
+    <!-- Карточка с деталями записи -->
     <div class="card shadow-sm p-4 mb-4">
         <div class="card-body">
+            <!-- Заголовок карточки -->
             <h4 class="card-title">Детали записи</h4>
+            
+            <!-- Основная информация о записи -->
             <p class="card-text">
+                <!-- Номер заявки -->
                 <strong>Номер заявки:</strong> #{{ order.id }}<br>
+                
+                <!-- Выбранный мастер -->
                 <strong>Мастер:</strong> {{ order.master.name }}<br>
+                
+                <!-- Дата и время записи -->
                 <strong>Дата:</strong> {{ order.date|date:"d.m.Y H:i" }}<br>
+                
+                <!-- Список услуг -->
                 <strong>Услуги:</strong>
                 <ul class="list-unstyled">
                     {% for service in services %}
                     <li>{{ service.name }} - {{ service.price }}₽</li>
                     {% endfor %}
                 </ul>
+                
+                <!-- Общая стоимость -->
                 <strong>Итого:</strong> {{ total_price }}₽
             </p>
         </div>
     </div>
+    
+    <!-- Кнопка возврата на главную -->
     <a href="{% url 'landing' %}" class="btn btn-primary mt-3">Вернуться на главную</a>
 </section>
-{% endblock %}
+{% endblock %}  <!-- Конец блока контента -->

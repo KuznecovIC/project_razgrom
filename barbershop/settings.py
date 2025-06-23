@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'core',
 ]
 
@@ -136,3 +137,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/orders/'  # Куда перенаправлять после входа
 LOGOUT_REDIRECT_URL = '/'
+
+
+SHELL_PLUS = "ipython"
+SHELL_PLUS_PRINT_SQL = True

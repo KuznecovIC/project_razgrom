@@ -1,50 +1,76 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %}  <!-- Наследуемся от базового шаблона -->
+{% load static %}  <!-- Загружаем теги для работы со статическими файлами -->
 
-{% block content %}
-<div class="container py-5">
-    <h2>Детали записи #{{ order.id }}</h2>
+{% block content %}  <!-- Определяем блок контента, который будет вставлен в базовый шаблон -->
+<div class="container py-5">  <!-- Основной контейнер с отступами -->
+    <h2>Детали записи #{{ order.id }}</h2>  <!-- Заголовок с номером записи -->
+    
+    <!-- Карточка с деталями записи -->
     <div class="card mb-4">
         <div class="card-body">
+            <!-- Информация о клиенте -->
             <p><strong>Клиент:</strong> {{ order.client_name }}</p>
             <p><strong>Телефон:</strong> {{ order.phone }}</p>
+            
+            <!-- Информация о мастере -->
             <p><strong>Мастер:</strong> {{ order.master.name }}</p>
+            
+            <!-- Дата записи -->
             <p><strong>Дата:</strong> {{ order.date }}</p>
+            
+            <!-- Статус записи с цветовым оформлением -->
             <p><strong>Статус:</strong> 
                 <span class="badge 
                     {% if order.status == 'new' %}bg-secondary text-white
                     {% elif order.status == 'confirmed' %}bg-primary
                     {% elif order.status == 'completed' %}bg-success
                     {% else %}bg-danger{% endif %}">
-                    {{ order.get_status_display }}
+                    {{ order.get_status_display }}  <!-- Отображаем человеко-читаемый статус -->
                 </span>
             </p>
             
+            <!-- Список услуг -->
             <h5 class="mt-4">Услуги:</h5>
             <ul class="list-group">
-                {% for service in order.services.all %}
+                {% for service in order.services.all %}  <!-- Цикл по всем услугам записи -->
                 <li class="list-group-item text-secondary">
-                    {{ service.name }} - {{ service.price }}₽
+                    {{ service.name }} - {{ service.price }}₽  <!-- Название и цена услуги -->
                 </li>
                 {% endfor %}
             </ul>
             
+            <!-- Кнопки действий -->
             <div class="mt-4 d-flex gap-3">
-                <a href="{% url 'order_edit' order_id=order.id %}" class="btn btn-primary flex-grow-1">Редактировать</a>
-                <a href="{% url 'order_delete' order_id=order.id %}" class="btn btn-danger flex-grow-1">Удалить</a>
-                <a href="{% url 'orders_list' %}" class="btn btn-secondary flex-grow-1">Назад к списку</a>
+                <!-- Кнопка редактирования -->
+                <a href="{% url 'order_edit' order_id=order.id %}" class="btn btn-primary flex-grow-1">
+                    Редактировать
+                </a>
+                
+                <!-- Кнопка удаления -->
+                <a href="{% url 'order_delete' order_id=order.id %}" class="btn btn-danger flex-grow-1">
+                    Удалить
+                </a>
+                
+                <!-- Кнопка возврата к списку -->
+                <a href="{% url 'orders_list' %}" class="btn btn-secondary flex-grow-1">
+                    Назад к списку
+                </a>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Встроенные стили для страницы -->
 <style>
+    /* Стиль для элементов списка услуг */
     .list-group-item.text-secondary {
-        color: #6c757d !important;
+        color: #6c757d !important;  /* Серый цвет текста */
     }
+    
+    /* Стиль для кнопок (не используется в текущей версии) */
     .btn-flex {
-        flex: 1;
-        margin: 0 5px;
+        flex: 1;  /* Равномерное распределение пространства */
+        margin: 0 5px;  /* Отступы между кнопками */
     }
 </style>
-{% endblock %}
+{% endblock %}  <!-- Конец блока контента -->
