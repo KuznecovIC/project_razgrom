@@ -66,7 +66,8 @@ def landing(request):
             order.created_at = timezone.now()
             order.save()
             form.save_m2m()  # Сохраняем многие-ко-многим (услуги)
-            return redirect(reverse('thanks', kwargs={'order_id': order.id}))
+            request.session['last_order_id'] = order.id
+            return redirect('thanks')
     else:
         form = OrderForm()
     
@@ -76,8 +77,12 @@ def landing(request):
         'form': form
     })
 
-def thanks(request, order_id):
+def thanks(request):
     """Страница подтверждения записи"""
+    order_id = request.session.get('last_order_id')
+    if not order_id:
+        return redirect('landing')
+    
     order = get_object_or_404(Order, id=order_id)
     return render(request, 'core/thanks.html', {
         'order': order,
@@ -92,7 +97,7 @@ def orders_list(request):
     return render(request, 'core/orders_list.html', {'orders': orders})
 
 @user_passes_test(lambda u: u.is_staff)
-def order_detail(request, order_id):  # Было pk
+def order_detail(request, order_id):
     order = get_object_or_404(Order.objects.select_related('master'), pk=order_id)
     return render(request, 'core/order_detail.html', {
         'order': order,
@@ -100,7 +105,7 @@ def order_detail(request, order_id):  # Было pk
     })
 
 @user_passes_test(lambda u: u.is_staff)
-def order_edit(request, order_id):  # Было pk
+def order_edit(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     if request.method == 'POST':
         form = OrderForm(request.POST, instance=order)
@@ -113,7 +118,7 @@ def order_edit(request, order_id):  # Было pk
     return render(request, 'core/order_edit.html', {'form': form, 'order': order})
 
 @user_passes_test(lambda u: u.is_staff)
-def order_delete(request, order_id):  # Было pk
+def order_delete(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     if request.method == 'POST':
         order.delete()

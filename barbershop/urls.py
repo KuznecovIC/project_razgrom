@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.landing, name='landing'),
-    path('thanks/<int:order_id>/', views.thanks, name='thanks'),
+    path('thanks/', views.thanks, name='thanks'),
     path('orders/', login_required(views.orders_list), name='orders_list'),
     path('orders/<int:order_id>/', login_required(views.order_detail), name='order_detail'),
     path('orders/<int:order_id>/edit/', login_required(views.order_edit), name='order_edit'),

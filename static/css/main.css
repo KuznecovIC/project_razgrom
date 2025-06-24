@@ -1,63 +1,55 @@
 /* === Базовые стили === */
-
-/* Основные стили для body с плавными переходами */
 body {
-  font-family: 'Roboto Condensed', sans-serif; /* Современный шрифт */
-  padding-top: 56px; /* Компенсация фиксированного хедера */
-  min-height: 100vh; /* На всю высоту viewport */
-  transition: background-color 0.3s ease, color 0.3s ease; /* Плавное переключение темы */
+  font-family: 'Roboto Condensed', sans-serif;
+  padding-top: 56px;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
   background-color: #ffffff;
   color: #212529;
 }
 
-/* Стили для навигационной панели */
 .navbar {
-  background-color: #2c3e50 !important; /* Темно-синий цвет */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Тень для глубины */
+  background-color: #2c3e50 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Анимированная кнопка входа */
 .btn-login {
   transition: all 0.3s ease;
-  animation: pulse 2s infinite; /* Пульсация для привлечения внимания */
+  animation: pulse 2s infinite;
 }
 .btn-login:hover {
-  animation: none; /* Отключаем пульсацию при наведении */
-  transform: translateY(-2px); /* Эффект "поднятия" */
+  animation: none;
+  transform: translateY(-2px);
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Основное содержимое страницы */
 #main-content {
   transition: all 0.3s ease;
-  min-height: calc(100vh - 56px - 72px); /* Высота с учетом хедера и футера */
+  min-height: calc(100vh - 56px - 72px);
   padding: 20px;
   border-radius: 8px;
   background-color: white;
   margin-top: 20px;
 }
 
-/* Стили карточек с эффектами при наведении */
 .card {
   background-color: #f8f9fa;
   border: none;
   border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Тень для карточек */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
   margin-bottom: 20px;
 }
 .card:hover {
-  transform: scale(1.02); /* Увеличение при наведении */
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15); /* Усиление тени */
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* Стили для текста в карточках */
 .card-body .card-text {
   color: #6c757d;
-  transition: color 0.3s ease; /* Плавное изменение цвета */
+  transition: color 0.3s ease;
 }
 
-/* Стили для светлых блоков */
 .bg-light {
   background-color: #f1f1f1 !important;
   padding: 2rem;
@@ -65,14 +57,12 @@ body {
   transition: all 0.3s ease;
 }
 
-/* Заголовки второго уровня */
 h2 {
   transition: color 0.3s ease;
   font-weight: bold;
   margin-bottom: 1.5rem;
 }
 
-/* Элементы списка */
 .list-group-item {
   background-color: #f8f9fa;
   color: #212529;
@@ -83,15 +73,13 @@ h2 {
   background-color: #e9ecef !important;
 }
 
-/* Иконки Bootstrap Icons */
 .bi {
   transition: transform 0.3s ease;
 }
 .bi:hover {
-  transform: scale(1.2); /* Увеличение иконок при наведении */
+  transform: scale(1.2);
 }
 
-/* Стили для кнопок */
 .btn-primary, .btn-sm {
   display: flex;
   justify-content: center;
@@ -106,13 +94,11 @@ h2 {
   color: white;
 }
 
-/* Стили подвала */
 footer {
   background-color: #2c3e50 !important;
   color: white !important;
 }
 
-/* Анимация появления элементов */
 .fade-in {
   opacity: 0;
   transform: translateY(30px);
@@ -126,86 +112,129 @@ footer {
 }
 
 /* === Тёмная тема === */
-
-/* Основные стили для темной темы */
 .dark-theme {
   background-color: #121212;
   color: #e0e0e0;
 }
 
-/* Основное содержимое в темной теме */
 .dark-theme #main-content {
   background-color: #1e1e1e;
-  color: #ffffff;
+  color: #f8f9fa;
 }
 
-/* Карточки и светлые блоки в темной теме */
-.dark-theme .card:not(#reviews .card),
-.dark-theme .bg-light:not(#order) {
-  background-color: #2c2c2c !important;
-  color: #ffffff !important;
+/* Общие стили текста */
+.dark-theme,
+.dark-theme p,
+.dark-theme h1,
+.dark-theme h2,
+.dark-theme h3,
+.dark-theme h4,
+.dark-theme h5,
+.dark-theme h6,
+.dark-theme .text-dark,
+.dark-theme .card-text,
+.dark-theme .card-body,
+.dark-theme .card-title,
+.dark-theme .card-footer,
+.dark-theme .form-label,
+.dark-theme .form-control,
+.dark-theme .form-select,
+.dark-theme .form-text,
+.dark-theme .invalid-feedback {
+  color: #f8f9fa !important;
 }
 
-/* Текст в карточках в темной теме */
-.dark-theme .card-body .card-text {
-  color: #b0b0b0 !important;
+/* Специальные стили для второстепенного текста */
+.dark-theme .text-muted {
+  color: #f8f9fa !important;
+  opacity: 0.8;
 }
 
-/* Элементы списка в темной теме */
-.dark-theme .list-group-item:not(#services .list-group-item) {
+/* Карточки */
+.dark-theme .card {
   background-color: #2c2c2c;
-  border-color: #3a3a3a;
+  border-color: #444;
 }
 
-/* Особые стили для секции услуг в темной теме */
+/* Секция "Почему мы" */
+.dark-theme #why-us {
+  background-color: #252525 !important;
+}
+.dark-theme #why-us .card {
+  background-color: #2c2c2c !important;
+}
+.dark-theme #why-us h2,
+.dark-theme #why-us h4,
+.dark-theme #why-us p {
+  color: #f8f9fa !important;
+}
+
+/* Секция отзывов */
+.dark-theme #reviews .card {
+  background-color: #2c2c2c !important;
+}
+
+/* Секция с мастерами */
+.dark-theme #masters {
+  background-color: #252525 !important;
+}
+.dark-theme #masters .card {
+  background-color: #2c2c2c !important;
+}
+
+/* Секция услуг */
+.dark-theme #services .card {
+  background-color: #2c2c2c !important;
+}
 .dark-theme #services .list-group-item {
-  color: #212529;
+  background-color: #2c2c2c !important;
+  border-color: #444 !important;
 }
 .dark-theme #services .list-group-item:hover {
   background-color: #3a3a3a !important;
-  color: #ffffff !important;
 }
 
-/* Заголовки в темной теме */
-.dark-theme h2 {
-  color: #ffffff;
-}
-
-/* Стили для секции записи */
-#order {
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  padding: 2rem;
-}
-
-/* Переопределения для темной темы в секции записи */
+/* Форма записи */
 .dark-theme #order {
+  background-color: #252525 !important;
+}
+.dark-theme #order .card {
   background-color: #2c2c2c !important;
 }
-.dark-theme #order h2 {
-  color: #ffffff !important;
-}
-.dark-theme #order .form-label,
 .dark-theme #order .form-control,
-.dark-theme #order .form-select,
-.dark-theme #order .form-text,
-.dark-theme #order .invalid-feedback,
-.dark-theme #order .text-muted {
-  color: #ffffff !important;
+.dark-theme #order .form-select {
+  background-color: #1e1e1e !important;
+  border-color: #444 !important;
 }
 
-/* Адаптивные стили для мобильных устройств */
+/* Иконки */
+.dark-theme .icon-box {
+  background-color: rgba(13, 110, 253, 0.2) !important;
+  color: #0d6efd !important;
+}
+
+/* Кнопки */
+.dark-theme .btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+.dark-theme .btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white !important;
+}
+
+/* Анимация пульсации */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+/* Адаптивные стили */
 @media (max-width: 768px) {
-  .display-5 {
-    font-size: 2rem; /* Уменьшение размера шрифта */
-  }
-  #order {
-    padding: 1rem !important; /* Уменьшение отступов */
-  }
-  .card {
-    margin-bottom: 15px; /* Уменьшение отступов между карточками */
-  }
-  .navbar-collapse {
-    padding-top: 1rem; /* Дополнительный отступ для мобильного меню */
-  }
+  .display-5 { font-size: 2rem; }
+  #order { padding: 1rem !important; }
+  .card { margin-bottom: 15px; }
+  .navbar-collapse { padding-top: 1rem; }
+  #why-us .card, #reviews .card { margin-bottom: 15px; }
 }

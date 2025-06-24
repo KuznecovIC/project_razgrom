@@ -1,43 +1,31 @@
-{% extends 'base.html' %}  <!-- Наследуем основной шаблон -->
-{% load static %}  <!-- Подключаем статические файлы -->
+{% extends 'base.html' %}
+{% load static %}
 
-{% block content %}  <!-- Начало блока контента -->
-<section class="container thank-you-message text-center mt-5">
-    <!-- Заголовок подтверждения -->
-    <h2>Спасибо за вашу заявку!</h2>
-    
-    <!-- Карточка с деталями записи -->
-    <div class="card shadow-sm p-4 mb-4">
-        <div class="card-body">
-            <!-- Заголовок карточки -->
-            <h4 class="card-title">Детали записи</h4>
-            
-            <!-- Основная информация о записи -->
-            <p class="card-text">
-                <!-- Номер заявки -->
-                <strong>Номер заявки:</strong> #{{ order.id }}<br>
-                
-                <!-- Выбранный мастер -->
-                <strong>Мастер:</strong> {{ order.master.name }}<br>
-                
-                <!-- Дата и время записи -->
-                <strong>Дата:</strong> {{ order.date|date:"d.m.Y H:i" }}<br>
-                
-                <!-- Список услуг -->
-                <strong>Услуги:</strong>
-                <ul class="list-unstyled">
+{% block content %}
+<div class="container text-center py-5">
+    <div class="card shadow p-5">
+        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+        <h2 class="mt-4">Спасибо за вашу заявку!</h2>
+        <p class="lead">Ваша запись #{{ order.id }} успешно создана.</p>
+        
+        <div class="card mt-4">
+            <div class="card-body text-start">
+                <h5>Детали записи:</h5>
+                <p><strong>Имя:</strong> {{ order.client_name }}</p>
+                <p><strong>Телефон:</strong> {{ order.phone }}</p>
+                <p><strong>Дата:</strong> {{ order.date }}</p>
+                <p><strong>Мастер:</strong> {{ order.master.name }}</p>
+                <p><strong>Услуги:</strong></p>
+                <ul>
                     {% for service in services %}
                     <li>{{ service.name }} - {{ service.price }}₽</li>
                     {% endfor %}
                 </ul>
-                
-                <!-- Общая стоимость -->
-                <strong>Итого:</strong> {{ total_price }}₽
-            </p>
+                <p class="fw-bold">Итого: {{ total_price }}₽</p>
+            </div>
         </div>
+        
+        <a href="/" class="btn btn-primary mt-4">Вернуться на главную</a>
     </div>
-    
-    <!-- Кнопка возврата на главную -->
-    <a href="{% url 'landing' %}" class="btn btn-primary mt-3">Вернуться на главную</a>
-</section>
-{% endblock %}  <!-- Конец блока контента -->
+</div>
+{% endblock %}

@@ -7,6 +7,6 @@ def nav_links(request):
             {'url': '#booking', 'name': 'Запись'},
         ],
         'staff_links': [
-            {'url': '/orders/', 'name': 'Заявки'},
+            {'url': '/orders/', 'name': 'Записи'},
         ]
     }
