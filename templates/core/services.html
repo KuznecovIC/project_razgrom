@@ -1,0 +1,6 @@
+<h1>Наши услуги</h1>
+<ul>
+    {% for service in services %}
+    <li>{{ service.name }} - {{ service.price }} руб.</li>
+    {% endfor %}
+</ul>

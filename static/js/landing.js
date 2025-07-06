@@ -1,84 +1,64 @@
-// landing.js - основной файл с исправлениями и улучшениями
-
 /**
- * Класс для управления темой приложения
- * Реализует:
- * - Сохранение темы в localStorage
- * - Переключение между светлой и темной темами
- * - Обработку исключений для отдельных элементов
+ * Управление темой приложения с улучшенной обработкой
  */
 class ThemeManager {
   constructor() {
     this.themeToggle = document.getElementById('themeToggle');
-    this.initTheme();
-    this.setupEventListeners();
+    if (!this.themeToggle) return;
+    
+    try {
+      this.initTheme();
+      this.setupEventListeners();
+    } catch (error) {
+      console.error('ThemeManager error:', error);
+    }
   }
 
-  // Инициализация темы из localStorage или установка светлой по умолчанию
   initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     this.applyTheme(savedTheme);
   }
 
-  // Применение выбранной темы ко всему документу
   applyTheme(theme) {
-    if (theme === 'dark') {
-      document.body.classList.add('dark-theme');
-      
-      // Исключения - элементы, которые должны оставаться светлыми
-      // (карточки отзывов и формы записи)
-      document.querySelectorAll('#reviews .card, #order .card, #order .form-label').forEach(el => {
-        el.classList.add('force-light');
-      });
-      
-      this.updateIcon('dark');
-    } else {
-      document.body.classList.remove('dark-theme');
-      
-      // Удаляем классы исключений при возврате к светлой теме
-      document.querySelectorAll('.force-light').forEach(el => {
-        el.classList.remove('force-light');
-      });
-      
-      this.updateIcon('light');
+    try {
+      document.body.classList.toggle('dark-theme', theme === 'dark');
+      this.updateIcon(theme);
+      localStorage.setItem('theme', theme);
+    } catch (error) {
+      console.error('Error applying theme:', error);
     }
   }
 
-  // Переключение между темами
   toggleTheme() {
     const isDark = document.body.classList.contains('dark-theme');
-    const newTheme = isDark ? 'light' : 'dark';
-    
-    localStorage.setItem('theme', newTheme);
-    this.applyTheme(newTheme);
+    this.applyTheme(isDark ? 'light' : 'dark');
   }
 
-  // Обновление иконки переключателя темы
   updateIcon(theme) {
     const icon = this.themeToggle?.querySelector('i');
     if (!icon) return;
-
-    icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    
+    icon.classList.toggle('bi-sun-fill', theme === 'dark');
+    icon.classList.toggle('bi-moon-fill', theme === 'light');
   }
 
-  // Настройка обработчиков событий
   setupEventListeners() {
     this.themeToggle?.addEventListener('click', () => this.toggleTheme());
   }
 }
 
 /**
- * Класс для плавной прокрутки к якорным ссылкам
- * Особенности:
- * - Учет высоты навигационной панели
- * - Автоматическое закрытие мобильного меню
+ * Улучшенная плавная прокрутка
  */
 class SmoothScroll {
   constructor() {
-    this.setupAnchorLinks();
+    try {
+      this.setupAnchorLinks();
+    } catch (error) {
+      console.error('SmoothScroll error:', error);
+    }
   }
 
-  // Настройка плавного скролла для всех якорных ссылок
   setupAnchorLinks() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', (e) => {
@@ -87,94 +67,91 @@ class SmoothScroll {
         const targetElement = document.querySelector(targetId);
         
         if (targetElement) {
-          // Прокрутка с учетом высоты навигации (70px)
-          window.scrollTo({
-            top: targetElement.offsetTop - 70,
-            behavior: 'smooth'
-          });
-
-          // Закрываем мобильное меню если открыто
-          const navbarCollapse = document.querySelector('.navbar-collapse.show');
-          if (navbarCollapse) {
-            new bootstrap.Collapse(navbarCollapse, { toggle: false }).hide();
-          }
+          this.scrollToElement(targetElement);
+          this.closeMobileMenu();
         }
       });
     });
+  }
+
+  scrollToElement(element) {
+    const offset = 70; // Высота навигации
+    const targetPosition = element.getBoundingClientRect().top + window.pageYOffset;
+    
+    window.scrollTo({
+      top: targetPosition - offset,
+      behavior: 'smooth'
+    });
+  }
+
+  closeMobileMenu() {
+    try {
+      const navbarCollapse = document.querySelector('.navbar-collapse.show');
+      if (navbarCollapse && typeof bootstrap?.Collapse === 'function') {
+        new bootstrap.Collapse(navbarCollapse, { toggle: false }).hide();
+      }
+    } catch (error) {
+      console.error('Error closing mobile menu:', error);
+    }
   }
 }
 
 /**
- * Главный класс приложения
- * Объединяет все компоненты и функциональность:
- * - Управление мастерами
- * - Управление услугами
- * - Анимации
- * - Тему
- * - Прокрутку
+ * Главный класс приложения с улучшенной инициализацией
  */
 class App {
   constructor() {
-    this.initMasters();
-    this.initServices();
+    this.initComponents();
     this.initAnimations();
-    new ThemeManager();
-    new SmoothScroll();
   }
 
-  // Инициализация данных о мастерах (в реальном проекте - запрос к API)
-  initMasters() {
-    this.masters = [
-      {
-        id: 1,
-        name: "Алексей 'Бритва' Петров",
-        photo: "{% static 'img/masters/master1.jpg' %}",
-        description: "Специалист по классическим и современным стрижкам. Стаж 8 лет.",
-        instagram: "@barber_alex"
-      },
-      // ... остальные мастера
-    ];
+  initComponents() {
+    try {
+      new ThemeManager();
+      new SmoothScroll();
+    } catch (error) {
+      console.error('Error initializing components:', error);
+    }
   }
 
-  // Инициализация данных об услугах
-  initServices() {
-    this.services = [
-      { id: 1, name: "Мужская стрижка", price: 1200 },
-      // ... остальные услуги
-    ];
-  }
-
-  // Настройка анимаций появления элементов при скролле
   initAnimations() {
     const animateOnScroll = () => {
-      const elements = document.querySelectorAll('.fade-in');
+      const windowHeight = window.innerHeight;
+      const triggerOffset = 100;
       
-      elements.forEach(el => {
+      document.querySelectorAll('.fade-in').forEach(el => {
         const elementTop = el.getBoundingClientRect().top;
-        const windowHeight = window.innerHeight;
+        const isVisible = elementTop < windowHeight - triggerOffset;
         
-        // Анимация срабатывает когда элемент на 100px ниже верха окна
-        if (elementTop < windowHeight - 100) {
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }
+        el.style.opacity = isVisible ? '1' : '0';
+        el.style.transform = isVisible ? 'translateY(0)' : 'translateY(20px)';
       });
     };
 
-    // Инициализация анимаций - установка начального состояния
+    // Инициализация анимаций
     document.querySelectorAll('.fade-in').forEach(el => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(20px)';
-      el.style.transition = 'all 0.6s ease';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     });
 
-    // Запускаем проверку при первой загрузке
-    animateOnScroll();
+    // Первая проверка
+    requestAnimationFrame(animateOnScroll);
     
-    // И при каждом скролле
-    window.addEventListener('scroll', animateOnScroll);
+    // Обработчик скролла с троттлингом
+    let isScrolling;
+    window.addEventListener('scroll', () => {
+      window.cancelAnimationFrame(isScrolling);
+      isScrolling = requestAnimationFrame(animateOnScroll);
+    }, { passive: true });
   }
 }
 
-// Запуск приложения после полной загрузки DOM
-document.addEventListener('DOMContentLoaded', () => new App());
+// Безопасная инициализация
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    new App();
+  } catch (error) {
+    console.error('Application initialization failed:', error);
+  }
+});

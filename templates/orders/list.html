@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Заголовок с иконкой и кнопкой -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-calendar-check text-primary me-2"></i>
+            Мои записи
+        </h2>
+        <a href="{% url 'landing' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle me-1"></i> Новая запись
+        </a>
+    </div>
+
+    <!-- Улучшенная форма поиска -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body p-3">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control form-control-lg" 
+                               placeholder="Поиск по имени, телефону или мастеру..." 
+                               value="{{ search }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-funnel me-1"></i> Найти
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Карточки записей вместо таблицы -->
+    <div class="row">
+        {% for order in orders %}
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Запись #{{ order.id }}</h5>
+                    <span class="badge bg-white text-primary fs-6">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-person-circle fs-4 text-primary me-2"></i>
+                                <div>
+                                    <h6 class="mb-0">Клиент</h6>
+                                    <p class="mb-0">{{ order.client_name }}</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-telephone fs-4 text-primary me-2"></i>
+                                <div>
+                                    <h6 class="mb-0">Телефон</h6>
+                                    <p class="mb-0">{{ order.phone }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-calendar-date fs-4 text-primary me-2"></i>
+                                <div>
+                                    <h6 class="mb-0">Дата и время</h6>
+                                    <p class="mb-0">
+                                        {{ order.date|date:"d.m.Y" }} в {{ order.time|time:"H:i" }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-scissors fs-4 text-primary me-2"></i>
+                                <div>
+                                    <h6 class="mb-0">Мастер</h6>
+                                    <p class="mb-0">{{ order.master.name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6><i class="bi bi-list-check text-primary me-2"></i>Услуги:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for service in order.services.all %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">
+                                {{ service.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if order.comment %}
+                    <div class="alert alert-light border mt-3">
+                        <h6><i class="bi bi-chat-left-text text-primary me-2"></i>Комментарий:</h6>
+                        <p class="mb-0">{{ order.comment }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-0 d-flex justify-content-between">
+                    <a href="{% url 'order_detail' order.id %}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i> Подробнее
+                    </a>
+                    <div class="btn-group">
+                        <a href="{% url 'order_edit' order.id %}" 
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'order_delete' order.id %}" 
+                           class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm text-center py-5">
+                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                <h3 class="mt-3">Записи не найдены</h3>
+                <p class="text-muted mb-4">
+                    {% if search %}
+                    Попробуйте изменить параметры поиска
+                    {% else %}
+                    У вас пока нет активных записей
+                    {% endif %}
+                </p>
+                <a href="{% url 'landing' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle me-1"></i> Создать запись
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Улучшенная пагинация -->
+    {% if orders.paginator.num_pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if orders.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}">
+                    <i class="bi bi-chevron-bar-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ orders.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                    Назад
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in orders.paginator.page_range %}
+            {% if orders.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if orders.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ orders.next_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                    Вперед
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ orders.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}">
+                    <i class="bi bi-chevron-bar-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    /* Анимации и стили */
+    .hover-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        border-radius: 0 !important;
+    }
+    
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+    
+    /* Темная тема */
+    [data-bs-theme="dark"] .hover-card {
+        background-color: #2c3034;
+    }
+    
+    [data-bs-theme="dark"] .card-header {
+        background-color: #1a1e21 !important;
+    }
+</style>
+{% endblock %}

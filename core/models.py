@@ -1,40 +1,106 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.utils import timezone
 from django.db import connection
+from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
+from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+from datetime import datetime
+
 
 class Service(models.Model):
-    """Модель услуги барбершопа"""
-    name = models.CharField(max_length=200, verbose_name="Название")
-    description = models.TextField(blank=True, verbose_name="Описание")
+    """Модель услуги барбершопа с расширенными возможностями"""
+    
+    class ServiceCategory(models.TextChoices):
+        HAIRCUT = 'HC', _('Стрижка')
+        BEARD = 'BD', _('Борода')
+        COMPLEX = 'CX', _('Комплекс')
+        OTHER = 'OT', _('Другое')
+
+    name = models.CharField(
+        max_length=200,
+        verbose_name=_("Название услуги"),
+        help_text=_("Полное название услуги для отображения клиентам")
+    )
+    
+    description = models.TextField(
+        verbose_name=_("Описание"),
+        blank=True,
+        help_text=_("Подробное описание услуги")
+    )
+    
     price = models.DecimalField(
-        max_digits=7, 
+        verbose_name=_("Цена"),
+        max_digits=7,
         decimal_places=2,
         validators=[MinValueValidator(100)],
-        verbose_name="Цена"
+        help_text=_("Цена в рублях")
     )
+    
     duration = models.PositiveIntegerField(
-        verbose_name="Длительность (мин)",
-        default=30
+        verbose_name=_("Длительность"),
+        default=30,
+        help_text=_("Продолжительность в минутах")
     )
+    
+    category = models.CharField(
+        verbose_name=_("Категория"),
+        max_length=2,
+        choices=ServiceCategory.choices,
+        default=ServiceCategory.HAIRCUT
+    )
+    
     is_popular = models.BooleanField(
+        verbose_name=_("Популярная услуга"),
         default=False,
-        verbose_name="Популярная услуга"
+        help_text=_("Отображать в списке популярных услуг")
     )
+    
+    is_active = models.BooleanField(
+        verbose_name=_("Активна"),
+        default=True,
+        help_text=_("Отображать ли услугу клиентам")
+    )
+    
     image = models.ImageField(
+        verbose_name=_("Изображение"),
         upload_to='services/',
         blank=True,
         null=True,
-        verbose_name="Изображение"
+        help_text=_("Изображение для карточки услуги")
+    )
+    
+    created_at = models.DateTimeField(
+        verbose_name=_("Дата создания"),
+        auto_now_add=True
+    )
+    
+    updated_at = models.DateTimeField(
+        verbose_name=_("Дата обновления"),
+        auto_now=True
     )
 
     def __str__(self):
-        return f"{self.name} - {self.price}₽"
+        return f"{self.name} ({self.get_category_display()}) - {self.price}₽"
 
     class Meta:
-        verbose_name = "Услуга"
-        verbose_name_plural = "Услуги"
-        ordering = ['name']
+        verbose_name = _("Услуга")
+        verbose_name_plural = _("Услуги")
+        ordering = ['category', 'name']
+        indexes = [
+            models.Index(fields=['is_active', 'is_popular']),
+            models.Index(fields=['category']),
+        ]
+
+    @property
+    def duration_display(self):
+        hours = self.duration // 60
+        minutes = self.duration % 60
+        if hours > 0:
+            return f"{hours} ч {minutes} мин"
+        return f"{minutes} мин"
+    
 
 class Master(models.Model):
     """Модель мастера барбершопа"""
@@ -44,6 +110,7 @@ class Master(models.Model):
         verbose_name="Фотография"
     )
     phone = models.CharField(max_length=20, verbose_name="Телефон")
+    email = models.EmailField(verbose_name="Email", blank=True, null=True)
     description = models.TextField(verbose_name="Описание", blank=True)
     instagram = models.CharField(
         max_length=50,
@@ -72,8 +139,8 @@ class Master(models.Model):
         verbose_name_plural = "Мастера"
         ordering = ['name']
 
+
 class Order(models.Model):
-    """Модель заказа в барбершопе"""
     STATUS_NEW = 'new'
     STATUS_CONFIRMED = 'confirmed'
     STATUS_COMPLETED = 'completed'
@@ -86,17 +153,19 @@ class Order(models.Model):
         (STATUS_CANCELLED, 'Отмененная'),
     ]
 
-    client_name = models.CharField(
-        max_length=100,
-        verbose_name="Имя клиента"
-    )
+    client_name = models.CharField(max_length=100, verbose_name="Имя клиента")
     phone = models.CharField(
-        max_length=20,
+        max_length=20, 
         verbose_name="Телефон",
-        blank=True,
-        null=True
+        validators=[RegexValidator(r'^\+?1?\d{9,15}$')]
     )
-    date = models.DateTimeField(verbose_name="Дата и время записи")
+    email = models.EmailField(verbose_name="Email", blank=True, null=True)
+    comment = models.TextField(verbose_name="Комментарий", blank=True)
+    date = models.DateField(
+        verbose_name="Дата записи",
+        validators=[MinValueValidator(timezone.now().date())]
+    )
+    time = models.TimeField(verbose_name="Время записи")
     master = models.ForeignKey(
         Master,
         on_delete=models.CASCADE,
@@ -116,29 +185,49 @@ class Order(models.Model):
         auto_now_add=True,
         verbose_name="Дата создания"
     )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь",
+        related_name='orders'  # Добавлено для удобства
+    )
+
+    def clean(self):
+        super().clean()
+        if self.date and self.date < timezone.now().date():
+            raise ValidationError({'date': 'Дата записи не может быть в прошлом'})
+        if self.date and self.time:
+            booking_time = timezone.make_aware(datetime.combine(self.date, self.time))
+            if booking_time < timezone.now():
+                raise ValidationError('Выбранное время уже прошло')
 
     def total_price(self):
-        """Возвращает общую стоимость заказа"""
+        """Вычисление общей стоимости услуг"""
         return sum(service.price for service in self.services.all())
 
-    def __str__(self):
-        return f"Запись #{self.id} - {self.client_name}"
+    @property
+    def datetime(self):
+        """Объединенная дата и время"""
+        return timezone.make_aware(datetime.combine(self.date, self.time))
 
-    def delete(self, *args, **kwargs):
-        """Переопределение удаления для сброса автоинкремента в SQLite"""
-        super().delete(*args, **kwargs)
-        if connection.vendor == 'sqlite':
-            cursor = connection.cursor()
-            cursor.execute("""
-                UPDATE SQLITE_SEQUENCE 
-                SET SEQ=0 
-                WHERE NAME='core_order'
-            """)
+    @property
+    def display_number(self):
+        """Форматированный номер заказа"""
+        return f"{self.id:05d}"
+
+    def __str__(self):
+        return f"Запись #{self.display_number} - {self.client_name} ({self.date})"
 
     class Meta:
         verbose_name = "Запись"
         verbose_name_plural = "Записи"
-        ordering = ['-date']
+        ordering = ['-date', '-time']
+        indexes = [
+            models.Index(fields=['status', 'date']),
+            models.Index(fields=['master', 'date']),
+            models.Index(fields=['user']),
+        ]
+
 
 class Review(models.Model):
     """Модель отзыва о мастере"""
@@ -153,7 +242,6 @@ class Review(models.Model):
     text = models.TextField(verbose_name="Текст отзыва")
     client_name = models.CharField(
         max_length=100,
-        blank=True,
         verbose_name="Имя клиента"
     )
     master = models.ForeignKey(
@@ -161,6 +249,13 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name="Мастер"
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Пользователь"
     )
     photo = models.ImageField(
         upload_to='reviews/',
@@ -183,7 +278,7 @@ class Review(models.Model):
     )
 
     def __str__(self):
-        return f"Отзыв #{self.id} на {self.master.name}"
+        return f"Отзыв #{self.id} на {self.master.name} ({self.rating}/5)"
 
     class Meta:
         verbose_name = "Отзыв"

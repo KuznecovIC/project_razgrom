@@ -1,31 +1,152 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}{% if no_order %}Заказ не найден{% else %}Спасибо за запись!{% endif %}{% endblock %}
+
 {% block content %}
-<div class="container text-center py-5">
-    <div class="card shadow p-5">
-        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
-        <h2 class="mt-4">Спасибо за вашу заявку!</h2>
-        <p class="lead">Ваша запись #{{ order.id }} успешно создана.</p>
-        
-        <div class="card mt-4">
-            <div class="card-body text-start">
-                <h5>Детали записи:</h5>
-                <p><strong>Имя:</strong> {{ order.client_name }}</p>
-                <p><strong>Телефон:</strong> {{ order.phone }}</p>
-                <p><strong>Дата:</strong> {{ order.date }}</p>
-                <p><strong>Мастер:</strong> {{ order.master.name }}</p>
-                <p><strong>Услуги:</strong></p>
-                <ul>
-                    {% for service in services %}
-                    <li>{{ service.name }} - {{ service.price }}₽</li>
-                    {% endfor %}
-                </ul>
-                <p class="fw-bold">Итого: {{ total_price }}₽</p>
+<div class="container py-5 flex-grow-1">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5 text-center">
+                    {% if no_order %}
+                        <!-- Отображение, когда заказа нет -->
+                        <div class="mb-4">
+                            <i class="bi bi-exclamation-circle-fill text-warning" style="font-size: 4rem;"></i>
+                        </div>
+                        <h1 class="display-5 fw-bold mb-3">Заказ не найден</h1>
+                        <p class="lead mb-5">Пожалуйста, оформите заказ на странице записи.</p>
+                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                            <a href="{% url 'landing' %}" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-calendar-plus me-2"></i>Записаться
+                            </a>
+                            <a href="/" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="bi bi-house-door me-2"></i>На главную
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Отображение, когда заказ есть -->
+                        <div class="mb-4">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h1 class="display-5 fw-bold mb-3">Спасибо за вашу заявку!</h1>
+                        <p class="lead mb-5">Ваша запись #{{ order.id }} успешно создана. Мы свяжемся с вами для подтверждения.</p>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Детали записи</h5>
+                            </div>
+                            <div class="card-body text-start">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Имя:</strong> {{ order.client_name }}</p>
+                                        <p><strong>Телефон:</strong> {{ order.phone }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Дата:</strong> {{ order.date|date:"d.m.Y" }}</p>
+                                        <p><strong>Время:</strong> {{ order.time|time:"H:i" }}</p>
+                                    </div>
+                                </div>
+                                <hr>
+                                <p><strong>Мастер:</strong> {{ order.master.name }}</p>
+                                <p class="mb-2"><strong>Услуги:</strong></p>
+                                <ul class="list-group mb-3">
+                                    {% for service in services %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ service.name }}
+                                        <span class="badge bg-primary rounded-pill">{{ service.price }}₽</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                <div class="d-flex justify-content-between align-items-center fw-bold fs-5">
+                                    <span>Итого:</span>
+                                    <span>{{ total_price }}₽</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                            <a href="/" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-house-door me-2"></i>На главную
+                            </a>
+                            {% if request.user.is_authenticated %}
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="bi bi-receipt me-2"></i>Детали записи
+                            </a>
+                            {% else %}
+                            <a href="{% url 'login' %}?next={% url 'order_detail' order.id %}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="bi bi-receipt me-2"></i>Детали записи
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
-        
-        <a href="/" class="btn btn-primary mt-4">Вернуться на главную</a>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Основные стили для фиксированного подвала */
+    html, body {
+        height: 100%;
+    }
+    
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .flex-grow-1 {
+        flex-grow: 1;
+    }
+    
+    /* Стили для темной темы */
+    .dark-theme .card {
+        background-color: #2c2c2c;
+        border-color: #444;
+    }
+    
+    .dark-theme .card-header {
+        background-color: #333 !important;
+        color: #fff;
+    }
+    
+    .dark-theme .list-group-item {
+        background-color: #2c2c2c;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+    
+    /* Стили для подвала */
+    footer {
+        margin-top: auto;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block footer %}
+<footer class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>О нас</h5>
+                <p>Барбершоп "Острый угол" - место, где создается ваш стиль.</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Контакты</h5>
+                <p>Телефон: +7 (123) 456-78-90</p>
+                <p>Адрес: г. Город, ул. Примерная, 123</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Часы работы</h5>
+                <p>Пн-Пт: 10:00 - 20:00</p>
+                <p>Сб-Вс: 10:00 - 18:00</p>
+            </div>
+        </div>
+    </div>
+</footer>
 {% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Запись #{{ order.id }} | Барбершоп "Острый угол"{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-calendar2-check text-primary me-2"></i>
+            Запись #{{ order.id }}
+        </h2>
+        <div>
+            <span class="badge rounded-pill 
+                {% if order.status == 'new' %}bg-secondary
+                {% elif order.status == 'confirmed' %}bg-primary
+                {% elif order.status == 'completed' %}bg-success
+                {% else %}bg-danger{% endif %} fs-6">
+                {{ order.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h5 class="text-muted mb-3"><i class="bi bi-person me-2"></i>Информация о клиенте</h5>
+                            <div class="ps-4">
+                                <p><strong>Имя:</strong> {{ order.client_name }}</p>
+                                <p><strong>Телефон:</strong> {{ order.phone }}</p>
+                                {% if order.email %}
+                                <p><strong>Email:</strong> {{ order.email }}</p>
+                                {% endif %}
+                                {% if order.comment %}
+                                <p><strong>Комментарий:</strong> {{ order.comment }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <h5 class="text-muted mb-3"><i class="bi bi-scissors me-2"></i>Информация о записи</h5>
+                            <div class="ps-4">
+                                <p><strong>Дата:</strong> {{ order.date|date:"d.m.Y" }}</p>
+                                <p><strong>Время:</strong> {{ order.time|time:"H:i" }}</p>
+                                <p><strong>Мастер:</strong> 
+                                    <span class="d-flex align-items-center mt-1">
+                                        {% if order.master.photo %}
+                                        <img src="{{ order.master.photo.url }}" 
+                                             class="rounded-circle me-2" 
+                                             width="30" height="30" 
+                                             alt="{{ order.master.name }}">
+                                        {% endif %}
+                                        {{ order.master.name }}
+                                    </span>
+                                </p>
+                                <p><strong>Создана:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Выбранные услуги</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Услуга</th>
+                                    <th>Длительность</th>
+                                    <th class="text-end">Цена</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in order.services.all %}
+                                <tr>
+                                    <td>{{ service.name }}</td>
+                                    <td>{{ service.duration }} мин</td>
+                                    <td class="text-end">{{ service.price }}₽</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="2">Итого</th>
+                                    <th class="text-end">{{ order.total_price }}₽</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'order_edit' order.id %}" 
+                           class="btn btn-primary btn-lg">
+                           <i class="bi bi-pencil-square me-2"></i>Редактировать запись
+                        </a>
+                        <a href="{% url 'order_delete' order.id %}" 
+                           class="btn btn-outline-danger btn-lg">
+                           <i class="bi bi-trash me-2"></i>Удалить запись
+                        </a>
+                        <a href="{% url 'order_list' %}" 
+                           class="btn btn-outline-secondary btn-lg">
+                           <i class="bi bi-arrow-left me-2"></i>Вернуться к списку
+                        </a>
+                    </div>
+                    
+                    {% if order.status == 'new' %}
+                    <div class="alert alert-info mt-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Ваша запись ожидает подтверждения.
+                    </div>
+                    {% elif order.status == 'confirmed' %}
+                    <div class="alert alert-success mt-4">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Ваша запись подтверждена на {{ order.date|date:"d.m.Y" }} в {{ order.time|time:"H:i" }}.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i>О мастере</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if order.master.photo %}
+                    <img src="{{ order.master.photo.url }}" 
+                         class="rounded-circle mb-3" 
+                         width="120" height="120" 
+                         alt="{{ order.master.name }}">
+                    {% endif %}
+                    <h4>{{ order.master.name }}</h4>
+                    <p class="text-muted">{{ order.master.experience }} лет опыта</p>
+                    <p>{{ order.master.description }}</p>
+                    {% if order.master.instagram %}
+                    <a href="https://instagram.com/{{ order.master.instagram|cut:'@' }}" 
+                       class="btn btn-outline-danger btn-sm" 
+                       target="_blank">
+                       <i class="bi bi-instagram me-1"></i> Instagram
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,.05);
+    }
+    
+    .table th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .table tfoot th {
+        font-size: 1rem;
+    }
+</style>
+{% endblock %}

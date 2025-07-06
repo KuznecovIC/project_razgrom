@@ -1,300 +1,227 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Барбершоп "Острый угол" - Запись{% endblock %}
+{% block title %}Барбершоп "Острый угол" - Главная{% endblock %}
 
 {% block content %}
 
-<!-- 
-  Основная структура страницы состоит из нескольких секций:
-  1. О нас
-  2. Цитата
-  3. Мастера
-  4. Услуги
-  5. Отзывы
-  6. Почему мы
-  7. Форма записи
-
-  Каждая секция имеет анимацию fade-in для плавного появления
--->
-
-<!-- Секция "О нас" - краткое описание барбершопа -->
-<section id="about" class="container py-5 fade-in">
-  <h2>О нас</h2>
-  <p>Добро пожаловать в барбершоп "Острый угол" — стиль, качество и внимание к деталям.</p>
-</section>
-
-<!-- Секция с цитатой для создания атмосферы -->
-<section class="container text-center my-5 fade-in">
-  <blockquote class="blockquote">
-    <p class="fs-4 fst-italic">"Барбершоп — это не просто стрижка. Это стиль жизни, уверенность и уважение к себе."</p>
-    <footer class="blockquote-footer mt-3">Команда "Острый угол"</footer>
-  </blockquote>
-</section>
-
-<!-- Секция с мастерами - динамическая часть, данные берутся из БД -->
-<section id="masters" class="container py-5 bg-light fade-in">
-  <h2 class="text-center mb-5">Наши мастера</h2>
-  <div class="row">
-    {% for master in masters %}
-    <div class="col-md-4 mb-4">
-      <div class="card h-100 border-0 shadow">
-        <!-- Фото мастера с обработкой случая, когда фото отсутствует -->
-        <div class="card-img-top overflow-hidden" style="height: 300px;">
-          {% if master.photo %}
-            <img src="{{ master.photo.url }}" class="img-fluid w-100 h-100 object-fit-cover" alt="{{ master.name }}">
-          {% else %}
-            <img src="{% static 'images/masters/default.jpg' %}" class="img-fluid w-100 h-100 object-fit-cover" alt="Фото мастера">
-          {% endif %}
-        </div>
-        <div class="card-body">
-          <h5 class="card-title text-center">{{ master.name }}</h5>
-          <p class="card-text text-center text-muted">{{ master.description }}</p>
-        </div>
-        <div class="card-footer bg-transparent border-0 d-flex justify-content-center">
-          <!-- Ссылка на Instagram с обработкой, если не указан -->
-          {% if master.instagram %}
-          <a href="https://instagram.com/{{ master.instagram|cut:'@' }}" 
-             class="btn btn-outline-danger btn-sm me-2"
-             target="_blank">
-            <i class="bi bi-instagram me-1"></i> Instagram
-          </a>
-          {% endif %}
-          <!-- Кнопка для перехода к форме записи -->
-          <a href="#order" class="btn btn-primary btn-sm">Записаться</a>
+<!-- Главный баннер -->
+<section class="hero-banner">
+  <div class="container">
+    <div class="row align-items-center py-5">
+      <div class="col-lg-6">
+        <h1>Барбершоп "Острый угол"</h1>
+        <p class="lead">Искусство мужских стрижек и бритья в самом сердце города</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <a href="#order" class="btn btn-primary btn-lg px-4">Записаться онлайн</a>
+          <a href="#masters" class="btn btn-outline-secondary btn-lg px-4">Наши мастера</a>
         </div>
       </div>
     </div>
-    {% endfor %}
   </div>
 </section>
 
-<!-- Секция с услугами - также динамическая, данные из БД -->
-<section id="services" class="container py-5 fade-in">
-  <h2 class="text-center mb-5">Наши услуги</h2>
-  <div class="row">
-    <div class="col-lg-8 mx-auto">
-      <div class="card border-0 shadow">
-        <div class="card-body p-0">
-          <ul class="list-group list-group-flush">
-            {% for service in services %}
-            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-              <div class="d-flex align-items-center">
-                <i class="bi bi-scissors text-primary fs-5 me-3"></i>
-                <span class="fw-medium">{{ service.name }}</span>
-              </div>
-              <span class="badge bg-primary rounded-pill fs-6">{{ service.price }}₽</span>
-            </li>
-            {% endfor %}
-          </ul>
+<!-- О нас -->
+<section id="about" class="container py-5 fade-in">
+  <div class="row align-items-center">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+      <h2 class="display-5 fw-bold mb-4">О нас</h2>
+      <p class="lead">"Острый угол" - это не просто барбершоп, это место, где создается ваш стиль.</p>
+      <p>Мы объединили традиции классического барберинга и современные тенденции, чтобы предложить вам лучший сервис в городе. Наши мастера - настоящие профессионалы с многолетним опытом.</p>
+      <div class="d-flex mt-4">
+        <div class="pe-4">
+          <h3 class="fw-bold">8+</h3>
+          <p>Лет опыта</p>
+        </div>
+        <div class="pe-4">
+          <h3 class="fw-bold">5000+</h3>
+          <p>Довольных клиентов</p>
+        </div>
+        <div>
+          <h3 class="fw-bold">98%</h3>
+          <p>Положительных отзывов</p>
         </div>
       </div>
     </div>
+    <div class="col-lg-6">
+      <div class="ratio ratio-16x9">
+        <img src="{% static 'images/about.jpg' %}" class="img-fluid rounded-3 shadow" alt="Интерьер барбершопа">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Мастера -->
+<section id="masters" class="py-5">
+  <div class="container">
+    <h2 class="text-center display-5 fw-bold mb-5">Наши мастера</h2>
+    <div class="row g-4">
+      {% for master in masters %}
+      <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm overflow-hidden">
+          <div class="card-img-top position-relative" style="height: 300px;">
+            {% if master.photo %}
+              <img src="{{ master.photo.url }}" class="img-fluid w-100 h-100 object-fit-cover" alt="{{ master.name }}">
+            {% else %}
+              <img src="{% static 'images/masters/default.jpg' %}" class="img-fluid w-100 h-100 object-fit-cover" alt="Фото мастера">
+            {% endif %}
+            <div class="position-absolute bottom-0 start-0 end-0 p-3 bg-dark bg-opacity-50 text-white">
+              <h5 class="mb-0">{{ master.name }}</h5>
+              <small class="text-white-50">{{ master.experience }} лет опыта</small>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-text">{{ master.description|truncatewords:20 }}</p>
+            {% if master.email %}
+            <p><strong>Email:</strong> {{ master.email }}</p>
+            {% endif %}
+            <div class="d-flex justify-content-between align-items-center">
+              {% if master.instagram %}
+              <a href="https://instagram.com/{{ master.instagram|cut:'@' }}" 
+                 class="btn btn-sm btn-outline-secondary"
+                 target="_blank">
+                <i class="bi bi-instagram me-1"></i> Instagram
+              </a>
+              {% endif %}
+              <a href="#order" class="btn btn-sm btn-primary">Записаться</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Секция услуг -->
+<section id="services" class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-5 display-5 fw-bold">Наши услуги</h2>
+    
+    {% if services %}
+    <div class="row g-4">
+      {% for service in services %}
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
+          {% if service.image %}
+          <img src="{{ service.image.url }}" 
+               class="card-img-top" 
+               alt="{{ service.name }}"
+               style="height: 200px; object-fit: cover;">
+          {% endif %}
+          
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <h3 class="card-title h5 mb-0">{{ service.name }}</h3>
+              <span class="badge bg-primary rounded-pill">
+                {{ service.get_category_display }}
+              </span>
+            </div>
+            
+            <p class="card-text text-muted mb-4">
+              {{ service.description|default:"Профессиональное выполнение услуги нашими мастерами"|truncatechars:100 }}
+            </p>
+            
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted">
+                <i class="bi bi-clock me-1"></i>
+                {{ service.duration_display }}
+              </span>
+              <span class="fw-bold fs-5 text-primary">
+                {{ service.price }} ₽
+              </span>
+            </div>
+          </div>
+          
+          <div class="card-footer bg-white border-0 pt-0">
+            <a href="#booking" 
+               class="btn btn-primary w-100 py-2"
+               data-service-id="{{ service.id }}"
+               onclick="setSelectedService({{ service.id }})">
+              <i class="bi bi-calendar-plus me-2"></i>Записаться
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-4">
+      <div class="py-3">
+        <i class="bi bi-info-circle-fill fs-1 text-primary"></i>
+        <h3 class="mt-3 mb-2">Услуги временно недоступны</h3>
+        <p class="mb-0">Пожалуйста, попробуйте позже или свяжитесь с нами</p>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </section>
 
 <!-- Отзывы -->
-<section id="reviews" class="container py-5 fade-in">
-  <h2 class="text-center mb-5 display-5 fw-bold">Отзывы наших клиентов</h2>
-  
-  <div class="row g-4">
-    <!-- Отзыв 1 -->
-    <div class="col-md-6 col-lg-4">
-      <div class="card h-100 review-card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <img src="{% static 'images/reviews/review1.jpg' %}" 
-                 class="rounded-circle me-3" 
-                 width="60" 
-                 height="60" 
-                 alt="Алексей">
-            <div>
-              <h5 class="mb-0">Алексей</h5>
-              <div class="text-warning small">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <span class="text-muted ms-2">2 недели назад</span>
+<section id="reviews" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center display-5 fw-bold mb-5">Отзывы наших клиентов</h2>
+    
+    <div class="row g-4">
+      {% for review in reviews|slice:":6" %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm review-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              {% if review.photo %}
+              <img src="{{ review.photo.url }}" 
+                   class="rounded-circle me-3" 
+                   width="60" 
+                   height="60" 
+                   alt="{{ review.client_name }}"
+                   loading="lazy">
+              {% else %}
+              <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                   style="width: 60px; height: 60px;">
+                <i class="bi bi-person-fill text-white fs-4"></i>
+              </div>
+              {% endif %}
+              <div>
+                <h5 class="mb-0">{{ review.client_name }}</h5>
+                <div class="text-warning small">
+                  {% for i in "12345" %}
+                    <i class="bi bi-star{% if forloop.counter <= review.rating %}-fill{% endif %}"></i>
+                  {% endfor %}
+                  <span class="text-muted ms-2">{{ review.created_at|date:"d.m.Y" }}</span>
+                </div>
               </div>
             </div>
+            <p class="card-text">{{ review.text }}</p>
           </div>
-          <p class="card-text">"Лучший барбершоп в городе! Сергей сделал идеальное оформление бороды. 
-          Теперь только к нему! Атмосфера на высоте, кофе вкусный, все чисто и аккуратно."</p>
-        </div>
-        <div class="card-footer bg-transparent border-0 pt-0">
-          <button class="btn btn-sm btn-outline-primary">Читать полностью</button>
+          <div class="card-footer bg-transparent border-0 pt-0">
+            <small class="text-muted">
+              <i class="bi bi-scissors me-1"></i>Мастер: {{ review.master.name }}
+            </small>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Отзыв 2 -->
-    <div class="col-md-6 col-lg-4">
-      <div class="card h-100 review-card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <img src="{% static 'images/reviews/review2.jpg' %}" 
-                 class="rounded-circle me-3" 
-                 width="60" 
-                 height="60" 
-                 alt="Дмитрий">
-            <div>
-              <h5 class="mb-0">Дмитрий</h5>
-              <div class="text-warning small">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-half"></i>
-                <span class="text-muted ms-2">месяц назад</span>
-              </div>
-            </div>
-          </div>
-          <p class="card-text">"Хожу сюда уже больше года. Мастера настоящие профессионалы, всегда следят 
-          за новыми тенденциями. Особенно нравится комплексная стрижка с укладкой - выгляжу на миллион!"</p>
-        </div>
-        <div class="card-footer bg-transparent border-0 pt-0">
-          <button class="btn btn-sm btn-outline-primary">Читать полностью</button>
+      {% empty %}
+      <div class="col-12 text-center py-4">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>Пока нет отзывов. Будьте первым!
         </div>
       </div>
+      {% endfor %}
     </div>
 
-    <!-- Отзыв 3 -->
-    <div class="col-md-6 col-lg-4">
-      <div class="card h-100 review-card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <img src="{% static 'images/reviews/review3.jpg' %}" 
-                 class="rounded-circle me-3" 
-                 width="60" 
-                 height="60" 
-                 alt="Иван">
-            <div>
-              <h5 class="mb-0">Иван</h5>
-              <div class="text-warning small">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <span class="text-muted ms-2">3 дня назад</span>
-              </div>
-            </div>
-          </div>
-          <p class="card-text">"Привел сына на первую в его жизни стрижку. Мастер нашел подход к ребенку, 
-          все прошло без слез! Теперь будем ходить только сюда. Спасибо за терпение и профессионализм!"</p>
-        </div>
-        <div class="card-footer bg-transparent border-0 pt-0">
-          <button class="btn btn-sm btn-outline-primary">Читать полностью</button>
-        </div>
-      </div>
+    <div class="text-center mt-5">
+      <a href="{% url 'add_review' %}" class="btn btn-outline-primary px-4 me-2">
+        <i class="bi bi-pencil me-2"></i>Оставить отзыв
+      </a>
+      <a href="{% url 'review_list' %}" class="btn btn-primary px-4">
+        <i class="bi bi-chat-square-text me-2"></i>Все отзывы
+      </a>
     </div>
-
-    <!-- Отзыв 4 -->
-    <div class="col-md-6 col-lg-4 d-none d-lg-block">
-      <div class="card h-100 review-card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <img src="{% static 'images/reviews/review4.jpg' %}" 
-                 class="rounded-circle me-3" 
-                 width="60" 
-                 height="60" 
-                 alt="Артем">
-            <div>
-              <h5 class="mb-0">Артем</h5>
-              <div class="text-warning small">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star"></i>
-                <span class="text-muted ms-2">2 месяца назад</span>
-              </div>
-            </div>
-          </div>
-          <p class="card-text">"Хороший барбершоп, но немного дороговато. Качество услуг на уровне, 
-          мастера внимательные. Интерьер стильный, есть где подождать свою очередь с комфортом."</p>
-        </div>
-        <div class="card-footer bg-transparent border-0 pt-0">
-          <button class="btn btn-sm btn-outline-primary">Читать полностью</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Отзыв 5 -->
-    <div class="col-md-6 col-lg-4 d-none d-lg-block">
-      <div class="card h-100 review-card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <img src="{% static 'images/reviews/review5.jpg' %}" 
-                 class="rounded-circle me-3" 
-                 width="60" 
-                 height="60" 
-                 alt="Михаил">
-            <div>
-              <h5 class="mb-0">Михаил</h5>
-              <div class="text-warning small">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <span class="text-muted ms-2">неделю назад</span>
-              </div>
-            </div>
-          </div>
-          <p class="card-text">"Делал королевское бритье - впечатления незабываемые! Расслабляющая 
-          процедура, качественные средства, идеальный результат. Теперь это мой must-have перед важными мероприятиями."</p>
-        </div>
-        <div class="card-footer bg-transparent border-0 pt-0">
-          <button class="btn btn-sm btn-outline-primary">Читать полностью</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Отзыв 6 -->
-    <div class="col-md-6 col-lg-4 d-none d-lg-block">
-      <div class="card h-100 review-card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <img src="{% static 'images/reviews/review6.jpg' %}" 
-                 class="rounded-circle me-3" 
-                 width="60" 
-                 height="60" 
-                 alt="Сергей">
-            <div>
-              <h5 class="mb-0">Сергей</h5>
-              <div class="text-warning small">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <span class="text-muted ms-2">5 дней назад</span>
-              </div>
-            </div>
-          </div>
-          <p class="card-text">"Регулярно посещаю уже 2 года. Всегда ухожу довольный. Особенно нравится 
-          отношение к клиентам - помнят предпочтения, дают советы по уходу. Рекомендую всем, кто ценит качество!"</p>
-        </div>
-        <div class="card-footer bg-transparent border-0 pt-0">
-          <button class="btn btn-sm btn-outline-primary">Читать полностью</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Кнопка "Все отзывы" -->
-  <div class="text-center mt-5">
-    <a href="#" class="btn btn-outline-primary px-4">
-      <i class="bi bi-chat-square-text me-2"></i>Все отзывы (47)
-    </a>
   </div>
 </section>
 
 <!-- Почему мы -->
-<section id="why-us" class="bg-light py-5 fade-in">
+<section id="why-us" class="py-5">
   <div class="container">
     <h2 class="text-center mb-5 display-5 fw-bold">Почему выбирают нас</h2>
     
@@ -413,84 +340,185 @@
   </div>
 </section>
 
-<!-- Основная секция с формой записи -->
-<section id="order" class="container py-5 bg-light fade-in">
-  <h2 class="text-center mb-5">Записаться</h2>
+<!-- Форма записи -->
+<section id="order" class="container py-5 fade-in">
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <form method="post" novalidate class="card border-0 shadow p-4">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
+      <div class="card border-0 shadow">
+        <div class="card-body p-5">
+          <h2 class="text-center mb-4">Записаться онлайн</h2>
+          <form method="post" action="{% url 'landing' %}" novalidate>
+            {% csrf_token %}
+            
+            {% if messages %}
+              {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              {% endfor %}
+            {% endif %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger mb-4">
+              <strong>Ошибка!</strong> Пожалуйста, исправьте следующие ошибки:
+              <ul>
+                {% for field, errors in form.errors.items %}
+                  {% for error in errors %}
+                    <li>{{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            
+            <div class="row g-3">
+              <!-- Имя -->
+              <div class="col-md-6">
+                <label for="id_client_name" class="form-label">Ваше имя</label>
+                <input type="text" name="client_name" class="form-control" required id="id_client_name">
+              </div>
 
-        <!-- Поле для имени -->
-        <div class="mb-3">
-          <label for="{{ form.client_name.id_for_label }}" class="form-label text-dark">Имя</label>
-          {{ form.client_name }}
-          {{ form.client_name.errors }}
+              <!-- Телефон -->
+              <div class="col-md-6">
+                <label for="id_phone" class="form-label">Телефон</label>
+                <input type="text" name="phone" class="form-control" required id="id_phone">
+              </div>
+              
+              <!-- Дата и время -->
+              <div class="col-md-6">
+                <label for="id_date" class="form-label">Дата</label>
+                <input type="date" name="date" class="form-control" required id="id_date">
+              </div>
+              
+              <div class="col-md-6">
+                <label for="id_time" class="form-label">Время</label>
+                <input type="time" name="time" class="form-control" required id="id_time">
+              </div>
+              
+              <!-- Мастер -->
+              <div class="col-12">
+                <label for="id_master" class="form-label">Выберите мастера</label>
+                <select name="master" class="form-select" required id="id_master">
+                  {% for master in masters %}
+                  <option value="{{ master.id }}">{{ master.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label fw-bold">Выберите услуги:</label>
+                <div class="row g-3">
+                  {% for service in services %}
+                  <div class="col-md-6">
+                    <div class="form-check card p-3">
+                      <input class="form-check-input" type="checkbox" 
+                             name="services" value="{{ service.id }}" 
+                             id="service-{{ service.id }}">
+                      <label class="form-check-label d-flex justify-content-between" 
+                             for="service-{{ service.id }}">
+                        <span>
+                          <strong>{{ service.name }}</strong><br>
+                          <small class="text-muted">{{ service.description|truncatewords:10 }}</small>
+                        </span>
+                        <span class="text-primary">{{ service.price }}₽</span>
+                      </label>
+                    </div>
+                  </div>
+                  {% empty %}
+                  <div class="col-12">
+                    <div class="alert alert-warning">
+                      В настоящее время нет доступных услуг для записи.
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              
+              <!-- Комментарий -->
+              <div class="col-12">
+                <label for="id_comment" class="form-label">Комментарий</label>
+                <textarea name="comment" class="form-control" id="id_comment" rows="3"></textarea>
+              </div>
+              
+              <!-- Кнопка отправки формы с индикацией загрузки -->
+              <div class="col-12 mt-4 position-relative">
+                <button type="submit" 
+                        class="btn btn-primary w-100 py-3"
+                        id="submit-button">
+                  <span class="button-content">
+                    <i class="bi bi-calendar-check me-2"></i>Записаться
+                  </span>
+                  <span class="spinner-border spinner-border-sm d-none" 
+                        role="status"
+                        aria-hidden="true"></span>
+                </button>
+                <div class="invalid-feedback d-block text-center mt-2" id="form-errors"></div>
+              </div>
+            </div>
+          </form>
         </div>
-
-        <!-- Поле для телефона -->
-        <div class="mb-3">
-          <label for="{{ form.phone.id_for_label }}" class="form-label text-dark">Телефон</label>
-          {{ form.phone }}
-          {{ form.phone.errors }}
-        </div>
-
-        <!-- Поле для даты и времени -->
-        <div class="mb-3">
-          <label for="{{ form.date.id_for_label }}" class="form-label text-dark">Дата и время записи</label>
-          {{ form.date }}
-          {{ form.date.errors }}
-        </div>
-
-        <!-- Выбор мастера -->
-        <div class="mb-3">
-          <label for="{{ form.master.id_for_label }}" class="form-label text-dark">Мастер</label>
-          {{ form.master }}
-          {{ form.master.errors }}
-        </div>
-
-        <!-- Выбор услуг (множественный выбор) -->
-        <div class="mb-3">
-          <label class="form-label text-dark">Услуги</label>
-          {{ form.services }}
-          {{ form.services.errors }}
-        </div>
-
-        <!-- Кнопка отправки формы -->
-        <button type="submit" class="btn btn-primary w-100 py-2">Записаться</button>
-      </form>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Стили для формы записи, включая поддержку темной темы -->
 <style>
-  /* Дополнительные стили формы */
-  #order .card {
-    background-color: #f8f9fa;
+  .review-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
-  #order .form-label {
-    color: #495057;
-    font-weight: 500;
-  }
-  #order .form-control, 
-  #order .form-select {
-    background-color: white;
-    border: 1px solid #ced4da;
-  }
-  
-  .dark-theme #order .card {
-    background-color: #2c2c2c;
-  }
-  .dark-theme #order .form-label {
-    color: #e0e0e0 !important;
-  }
-  .dark-theme #order .form-control,
-  .dark-theme #order .form-select {
-    background-color: #1e1e1e !important;
-    border-color: #3a3a3a !important;
+  .review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1)!important;
   }
 </style>
+
+<script>
+function setSelectedService(serviceId) {
+  // Установка выбранной услуги в форме записи
+  document.querySelector(`input[name="services"][value="${serviceId}"]`).checked = true;
+  // Прокрутка к форме
+  document.getElementById('order').scrollIntoView({behavior: 'smooth'});
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.querySelector('form');
+  const submitBtn = document.getElementById('submit-button');
+  
+  if (form) {
+    form.addEventListener('submit', function() {
+      // Блокировка кнопки при отправке
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      
+      // Показать спиннер
+      const spinner = submitBtn.querySelector('.spinner-border');
+      spinner.classList.remove('d-none');
+    });
+    
+    // Обработка ошибок формы
+    form.addEventListener('formdata', function(e) {
+      const formData = e.formData;
+      let isValid = true;
+      
+      // Простая валидация (можно расширить)
+      for (const pair of formData.entries()) {
+        if (!pair[1]) {
+          isValid = false;
+          break;
+        }
+      }
+      
+      if (!isValid) {
+        document.getElementById('form-errors').textContent = 'Пожалуйста, заполните все поля';
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        spinner.classList.add('d-none');
+        e.preventDefault();
+      }
+    });
+  }
+});
+</script>
 
 {% endblock %}

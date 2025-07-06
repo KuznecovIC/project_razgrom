@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-lg">
+        <div class="card-header bg-primary text-white">
+          <h2 class="mb-0">
+            <i class="bi bi-chat-square-text me-2"></i>
+            Оставить отзыв о нашем сервисе
+          </h2>
+        </div>
+        
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <!-- Клиент и мастер -->
+            <div class="row mb-4">
+              <div class="col-md-6 mb-3 mb-md-0">
+                <label for="{{ form.client_name.id_for_label }}" class="form-label">
+                  <i class="bi bi-person-fill me-2"></i>Ваше имя
+                </label>
+                {{ form.client_name }}
+                <div class="invalid-feedback">
+                  Пожалуйста, укажите ваше имя
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <label for="{{ form.master.id_for_label }}" class="form-label">
+                  <i class="bi bi-scissors me-2"></i>Мастер
+                </label>
+                {{ form.master }}
+                <div class="invalid-feedback">
+                  Пожалуйста, выберите мастера
+                </div>
+              </div>
+            </div>
+            
+            <!-- Рейтинг -->
+            <div class="mb-4">
+              <label class="form-label d-block">
+                <i class="bi bi-star-fill me-2"></i>Ваша оценка
+              </label>
+              <div class="rating-input">
+                {% for i in "12345" %}
+                  <div class="form-check form-check-inline">
+                    <input type="radio" 
+                           class="form-check-input" 
+                           name="{{ form.rating.name }}" 
+                           id="rating_{{ forloop.counter }}" 
+                           value="{{ forloop.counter }}"
+                           {% if form.rating.value == forloop.counter %}checked{% endif %}>
+                    <label for="rating_{{ forloop.counter }}" class="form-check-label star-rating">
+                      <i class="bi bi-star{% if forloop.counter <= form.rating.value %} fill{% endif %}"></i>
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            
+            <!-- Текст отзыва -->
+            <div class="mb-4">
+              <label for="{{ form.text.id_for_label }}" class="form-label">
+                <i class="bi bi-chat-left-text me-2"></i>Текст отзыва
+              </label>
+              {{ form.text }}
+              <div class="form-text">Расскажите о вашем опыте посещения</div>
+            </div>
+            
+            <!-- Фото -->
+            <div class="mb-4">
+              <label for="{{ form.photo.id_for_label }}" class="form-label">
+                <i class="bi bi-image me-2"></i>Фотография (необязательно)
+              </label>
+              <div class="file-upload">
+                {{ form.photo }}
+                <div class="file-upload-label">
+                  <span class="file-upload-text">Перетащите файл сюда или кликните для выбора</span>
+                  <span class="file-upload-btn btn btn-outline-secondary">
+                    <i class="bi bi-upload me-1"></i>Выбрать файл
+                  </span>
+                </div>
+              </div>
+              <div class="form-text">Максимальный размер файла: 5MB</div>
+            </div>
+            
+            <!-- Кнопка отправки -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+              <button type="submit" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-send-fill me-2"></i>Отправить отзыв
+              </button>
+              <a href="{% url 'review_list' %}" class="btn btn-outline-secondary px-4 py-2">
+                <i class="bi bi-arrow-left me-2"></i>Вернуться к отзывам
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Стили -->
+<style>
+  .card {
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  
+  .card-header {
+    border-radius: 0 !important;
+  }
+  
+  .rating-input {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .rating-input .form-check {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .rating-input .form-check-input {
+    display: none;
+  }
+  
+  .rating-input .star-rating {
+    font-size: 1.8rem;
+    color: #dee2e6;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .rating-input .form-check-input:checked ~ .star-rating,
+  .rating-input .form-check-input:checked ~ .star-rating ~ .star-rating,
+  .rating-input .star-rating:hover,
+  .rating-input .star-rating:hover ~ .star-rating {
+    color: #ffc107;
+  }
+  
+  .rating-input .form-check-input:checked ~ .star-rating,
+  .rating-input .star-rating:hover {
+    transform: scale(1.1);
+  }
+  
+  .file-upload {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .file-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+  
+  .file-upload-label {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  
+  .file-upload:hover .file-upload-label {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+  }
+  
+  .file-upload-text {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #6c757d;
+  }
+  
+  textarea.form-control {
+    min-height: 150px;
+    resize: vertical;
+  }
+  
+  .form-label {
+    font-weight: 500;
+  }
+  
+  .was-validated .form-control:invalid,
+  .was-validated .form-select:invalid {
+    border-color: #dc3545;
+  }
+  
+  .was-validated .form-control:valid,
+  .was-validated .form-select:valid {
+    border-color: #198754;
+  }
+</style>
+
+<!-- Скрипт для звезд рейтинга -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Обработка кликов по звездам
+  const stars = document.querySelectorAll('.rating-input .form-check-input');
+  stars.forEach(star => {
+    star.addEventListener('change', function() {
+      // Обновляем визуальное отображение звезд
+      const rating = this.value;
+      document.querySelectorAll('.star-rating i').forEach((icon, index) => {
+        if (index < rating) {
+          icon.classList.add('fill');
+        } else {
+          icon.classList.remove('fill');
+        }
+      });
+    });
+  });
+  
+  // Подсветка при наведении
+  const starLabels = document.querySelectorAll('.star-rating');
+  starLabels.forEach(label => {
+    label.addEventListener('mouseover', function() {
+      const currentId = this.getAttribute('for');
+      const currentIndex = parseInt(document.getElementById(currentId).value);
+      
+      starLabels.forEach((l, index) => {
+        const icon = l.querySelector('i');
+        if (index < currentIndex) {
+          icon.style.color = '#ffc107';
+        }
+      });
+    });
+    
+    label.addEventListener('mouseout', function() {
+      // Восстанавливаем цвет на основе выбранного значения
+      const checkedStar = document.querySelector('.rating-input .form-check-input:checked');
+      if (checkedStar) {
+        const checkedValue = parseInt(checkedStar.value);
+        starLabels.forEach((l, index) => {
+          const icon = l.querySelector('i');
+          icon.style.color = index < checkedValue ? '#ffc107' : '#dee2e6';
+        });
+      } else {
+        starLabels.forEach(l => {
+          l.querySelector('i').style.color = '#dee2e6';
+        });
+      }
+    });
+  });
+  
+  // Валидация формы
+  const form = document.querySelector('.needs-validation');
+  form.addEventListener('submit', function(event) {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  }, false);
+  
+  // Отображение имени файла
+  const fileInput = document.querySelector('input[type="file"]');
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      const fileName = this.files[0]?.name || 'Файл не выбран';
+      document.querySelector('.file-upload-text').textContent = fileName;
+    });
+  }
+});
+</script>
+{% endblock %}

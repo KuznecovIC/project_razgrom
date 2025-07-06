@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card border-0 shadow">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">
+                <i class="bi bi-exclamation-triangle"></i>
+                Подтверждение удаления
+            </h4>
+        </div>
+        <div class="card-body">
+            <p>Вы уверены, что хотите удалить запись #{{ order.id }} для {{ order.client_name }}?</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'order_detail' pk=order.id %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Отмена
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
