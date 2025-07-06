@@ -233,7 +233,6 @@ def order_detail(request, pk):
 
 @login_required
 def order_edit(request, pk):
-    """Редактирование заказа"""
     order = get_object_or_404(Order, pk=pk, user=request.user)
     
     if request.method == 'POST':
@@ -241,9 +240,11 @@ def order_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Запись успешно обновлена!')
-            return redirect('order_list')
+            return redirect('order_detail', pk=order.id)
     else:
         form = OrderForm(instance=order)
+        # Явно задаем queryset для поля master
+        form.fields['master'].queryset = Master.objects.filter(is_active=True)
     
     return render(request, 'orders/edit.html', {
         'form': form,
