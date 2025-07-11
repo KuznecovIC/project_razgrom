@@ -10,7 +10,8 @@ class OrderForm(forms.ModelForm):
     services = forms.ModelMultipleChoiceField(
         queryset=Service.objects.none(),  # Будет переопределено в __init__
         widget=CheckboxSelectMultiple(attrs={
-            'class': 'form-check-input service-checkbox'
+            'class': 'form-check-input service-checkbox',
+            'id': 'services-select'
         }),
         required=True,
         label="Услуги"
@@ -65,7 +66,13 @@ class OrderForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['master'].queryset = Master.objects.filter(is_active=True)
-        self.fields['services'].queryset = Service.objects.filter(is_active=True)
+        
+        # Если форма привязана к существующему экземпляру (редактирование)
+        if self.instance and self.instance.pk:
+            self.fields['services'].queryset = self.instance.master.services.filter(is_active=True)
+        else:
+            # Для новой записи показываем все активные услуги
+            self.fields['services'].queryset = Service.objects.filter(is_active=True)
         
         # Обновляем минимальную дату
         tomorrow = date.today() + timedelta(days=1)
@@ -83,8 +90,10 @@ class OrderForm(forms.ModelForm):
         cleaned_data = super().clean()
         date_val = cleaned_data.get('date')
         time_val = cleaned_data.get('time')
+        master = cleaned_data.get('master')
+        services = cleaned_data.get('services', [])
         
-        # Мягкая проверка даты
+        # Проверка даты и времени
         if date_val and date_val < date.today():
             self.add_error('date', 'Нельзя выбрать прошедшую дату')
             
@@ -94,6 +103,16 @@ class OrderForm(forms.ModelForm):
             )
             if booking_time < timezone.now():
                 self.add_error('time', 'Выбранное время уже прошло')
+        
+        # Проверка что мастер предоставляет выбранные услуги
+        if master and services:
+            master_services = master.services.all()
+            invalid_services = [service for service in services if service not in master_services]
+            
+            if invalid_services:
+                invalid_names = ", ".join([s.name for s in invalid_services])
+                self.add_error('services', 
+                    f"Мастер {master.name} не предоставляет выбранные услуги: {invalid_names}")
         
         return cleaned_data
 
@@ -110,6 +129,7 @@ class OrderForm(forms.ModelForm):
             self.save_m2m()  # Важно для ManyToMany полей
         
         return instance
+
 
 class OrderSearchForm(forms.Form):
     SEARCH_FIELD_CHOICES = [
@@ -147,7 +167,10 @@ class ReviewForm(forms.ModelForm):
     
     rating = forms.ChoiceField(
         choices=RATING_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'id': 'rating-select'
+        }),
         label='Оценка'
     )
 
@@ -169,7 +192,8 @@ class ReviewForm(forms.ModelForm):
                 'accept': 'image/*'
             }),
             'master': forms.Select(attrs={
-                'class': 'form-select'
+                'class': 'form-select',
+                'id': 'review-master-select'
             })
         }
 

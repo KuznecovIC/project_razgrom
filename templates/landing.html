@@ -347,7 +347,7 @@
       <div class="card border-0 shadow">
         <div class="card-body p-5">
           <h2 class="text-center mb-4">Записаться онлайн</h2>
-          <form method="post" action="{% url 'landing' %}" novalidate>
+          <form method="post" action="{% url 'landing' %}" novalidate id="booking-form">
             {% csrf_token %}
             
             {% if messages %}
@@ -376,84 +376,100 @@
               <!-- Имя -->
               <div class="col-md-6">
                 <label for="id_client_name" class="form-label">Ваше имя</label>
-                <input type="text" name="client_name" class="form-control" required id="id_client_name">
+                <input type="text" name="client_name" class="form-control" required id="id_client_name"
+                       value="{{ form.client_name.value|default_if_none:'' }}">
               </div>
 
               <!-- Телефон -->
               <div class="col-md-6">
                 <label for="id_phone" class="form-label">Телефон</label>
-                <input type="text" name="phone" class="form-control" required id="id_phone">
+                <input type="tel" name="phone" class="form-control" required id="id_phone"
+                       value="{{ form.phone.value|default_if_none:'' }}"
+                       pattern="\+?[0-9\s\-\(\)]{10,16}">
+                <small class="form-text text-muted">Формат: +7 (999) 123-45-67</small>
               </div>
               
               <!-- Дата и время -->
               <div class="col-md-6">
                 <label for="id_date" class="form-label">Дата</label>
-                <input type="date" name="date" class="form-control" required id="id_date">
+                <input type="date" name="date" class="form-control" required id="id_date"
+                       min="{{ min_date|date:'Y-m-d' }}" value="{{ form.date.value|date:'Y-m-d' }}">
               </div>
               
               <div class="col-md-6">
                 <label for="id_time" class="form-label">Время</label>
-                <input type="time" name="time" class="form-control" required id="id_time">
+                <input type="time" name="time" class="form-control" required id="id_time"
+                       value="{{ form.time.value|time:'H:i' }}">
               </div>
               
               <!-- Мастер -->
               <div class="col-12">
                 <label for="id_master" class="form-label">Выберите мастера</label>
                 <select name="master" class="form-select" required id="id_master">
+                  <option value="">-- Выберите мастера --</option>
                   {% for master in masters %}
-                  <option value="{{ master.id }}">{{ master.name }}</option>
+                  <option value="{{ master.id }}" 
+                          {% if form.master.value == master.id %}selected{% endif %}>
+                    {{ master.name }} ({{ master.experience }} лет опыта)
+                  </option>
                   {% endfor %}
                 </select>
               </div>
 
-              <div class="mb-4">
+              <!-- Услуги (динамическая загрузка) -->
+              <div class="col-12">
                 <label class="form-label fw-bold">Выберите услуги:</label>
-                <div class="row g-3">
-                  {% for service in services %}
-                  <div class="col-md-6">
-                    <div class="form-check card p-3">
-                      <input class="form-check-input" type="checkbox" 
-                             name="services" value="{{ service.id }}" 
-                             id="service-{{ service.id }}">
-                      <label class="form-check-label d-flex justify-content-between" 
-                             for="service-{{ service.id }}">
-                        <span>
-                          <strong>{{ service.name }}</strong><br>
-                          <small class="text-muted">{{ service.description|truncatewords:10 }}</small>
-                        </span>
-                        <span class="text-primary">{{ service.price }}₽</span>
-                      </label>
+                <div id="services-container">
+                  {% if form.master.value %}
+                    <div class="row g-3" id="services-row">
+                      {% for service in form.master.instance.services.all %}
+                      <div class="col-md-6">
+                        <div class="form-check card p-3 h-100 service-card">
+                          <input class="form-check-input" type="checkbox" 
+                                 name="services" value="{{ service.id }}" 
+                                 id="service-{{ service.id }}"
+                                 {% if service.id in form.services.value %}checked{% endif %}>
+                          <label class="form-check-label d-flex justify-content-between" 
+                                 for="service-{{ service.id }}">
+                            <span>
+                              <strong>{{ service.name }}</strong><br>
+                              <small class="text-muted">{{ service.description|truncatewords:10 }}</small>
+                            </span>
+                            <span class="text-primary">{{ service.price }}₽</span>
+                          </label>
+                        </div>
+                      </div>
+                      {% empty %}
+                      <div class="col-12">
+                        <div class="alert alert-warning">
+                          У выбранного мастера нет доступных услуг.
+                        </div>
+                      </div>
+                      {% endfor %}
                     </div>
-                  </div>
-                  {% empty %}
-                  <div class="col-12">
-                    <div class="alert alert-warning">
-                      В настоящее время нет доступных услуг для записи.
+                  {% else %}
+                    <div class="alert alert-info">
+                      Пожалуйста, сначала выберите мастера
                     </div>
-                  </div>
-                  {% endfor %}
+                  {% endif %}
                 </div>
               </div>
               
               <!-- Комментарий -->
               <div class="col-12">
                 <label for="id_comment" class="form-label">Комментарий</label>
-                <textarea name="comment" class="form-control" id="id_comment" rows="3"></textarea>
+                <textarea name="comment" class="form-control" id="id_comment" rows="3">{{ form.comment.value|default_if_none:'' }}</textarea>
               </div>
               
-              <!-- Кнопка отправки формы с индикацией загрузки -->
-              <div class="col-12 mt-4 position-relative">
-                <button type="submit" 
-                        class="btn btn-primary w-100 py-3"
-                        id="submit-button">
-                  <span class="button-content">
+              <!-- Кнопка отправки формы -->
+              <div class="col-12 mt-4">
+                <button type="submit" class="btn btn-primary w-100 py-3" id="submit-button">
+                  <span id="button-text">
                     <i class="bi bi-calendar-check me-2"></i>Записаться
                   </span>
-                  <span class="spinner-border spinner-border-sm d-none" 
-                        role="status"
-                        aria-hidden="true"></span>
+                  <span id="button-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                 </button>
-                <div class="invalid-feedback d-block text-center mt-2" id="form-errors"></div>
+                <div id="form-errors" class="invalid-feedback d-block text-center mt-2"></div>
               </div>
             </div>
           </form>
@@ -464,6 +480,149 @@
 </section>
 
 <style>
+  .service-card {
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .service-card:hover {
+    border-color: var(--bs-primary);
+    background-color: rgba(13, 110, 253, 0.05);
+  }
+  
+  .form-check-input:checked ~ .service-card {
+    border-color: var(--bs-primary);
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+  
+  #services-container .alert {
+    margin-bottom: 0;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const masterSelect = document.getElementById('id_master');
+  const servicesContainer = document.getElementById('services-container');
+  const bookingForm = document.getElementById('booking-form');
+  const submitButton = document.getElementById('submit-button');
+  const buttonText = document.getElementById('button-text');
+  const buttonSpinner = document.getElementById('button-spinner');
+  
+  // Динамическая загрузка услуг при изменении мастера
+  masterSelect.addEventListener('change', function() {
+    const masterId = this.value;
+    
+    if (!masterId) {
+      servicesContainer.innerHTML = `
+        <div class="alert alert-info">
+          Пожалуйста, сначала выберите мастера
+        </div>
+      `;
+      return;
+    }
+    
+    servicesContainer.innerHTML = `
+      <div class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-2">Загрузка услуг...</p>
+      </div>
+    `;
+    
+    fetch(`/api/master/${masterId}/services/`)
+      .then(response => response.json())
+      .then(services => {
+        if (services.length === 0) {
+          servicesContainer.innerHTML = `
+            <div class="alert alert-warning">
+              У выбранного мастера нет доступных услуг
+            </div>
+          `;
+          return;
+        }
+        
+        let servicesHTML = '<div class="row g-3" id="services-row">';
+        
+        services.forEach(service => {
+          servicesHTML += `
+            <div class="col-md-6">
+              <div class="form-check card p-3 h-100 service-card">
+                <input class="form-check-input" type="checkbox" 
+                       name="services" value="${service.id}" 
+                       id="service-${service.id}">
+                <label class="form-check-label d-flex justify-content-between" 
+                       for="service-${service.id}">
+                  <span>
+                    <strong>${service.name}</strong><br>
+                    <small class="text-muted">${service.description || ''}</small>
+                  </span>
+                  <span class="text-primary">${service.price}₽</span>
+                </label>
+              </div>
+            </div>
+          `;
+        });
+        
+        servicesHTML += '</div>';
+        servicesContainer.innerHTML = servicesHTML;
+        
+        // Подсветка выбранных услуг
+        document.querySelectorAll('.form-check-input').forEach(checkbox => {
+          checkbox.addEventListener('change', function() {
+            const card = this.closest('.service-card');
+            if (this.checked) {
+              card.classList.add('border-primary');
+              card.style.backgroundColor = 'rgba(13, 110, 253, 0.1)';
+            } else {
+              card.classList.remove('border-primary');
+              card.style.backgroundColor = '';
+            }
+          });
+        });
+      })
+      .catch(error => {
+        console.error('Ошибка загрузки услуг:', error);
+        servicesContainer.innerHTML = `
+          <div class="alert alert-danger">
+            Ошибка загрузки услуг. Пожалуйста, попробуйте позже.
+          </div>
+        `;
+      });
+  });
+  
+  // Обработка отправки формы
+  bookingForm.addEventListener('submit', function(e) {
+    // Проверка выбранных услуг
+    const masterId = masterSelect.value;
+    const selectedServices = document.querySelectorAll('input[name="services"]:checked');
+    
+    if (masterId && selectedServices.length === 0) {
+      e.preventDefault();
+      document.getElementById('form-errors').textContent = 'Пожалуйста, выберите хотя бы одну услугу';
+      return;
+    }
+    
+    // Показать спиннер загрузки
+    buttonText.classList.add('d-none');
+    buttonSpinner.classList.remove('d-none');
+    submitButton.disabled = true;
+  });
+  
+  // Инициализация подсветки выбранных услуг
+  document.querySelectorAll('.form-check-input').forEach(checkbox => {
+    if (checkbox.checked) {
+      const card = checkbox.closest('.service-card');
+      card.classList.add('border-primary');
+      card.style.backgroundColor = 'rgba(13, 110, 253, 0.1)';
+    }
+  });
+});
+</script>
+
+
+<style>
   .review-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
@@ -472,53 +631,5 @@
     box-shadow: 0 10px 20px rgba(0,0,0,0.1)!important;
   }
 </style>
-
-<script>
-function setSelectedService(serviceId) {
-  // Установка выбранной услуги в форме записи
-  document.querySelector(`input[name="services"][value="${serviceId}"]`).checked = true;
-  // Прокрутка к форме
-  document.getElementById('order').scrollIntoView({behavior: 'smooth'});
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.querySelector('form');
-  const submitBtn = document.getElementById('submit-button');
-  
-  if (form) {
-    form.addEventListener('submit', function() {
-      // Блокировка кнопки при отправке
-      submitBtn.disabled = true;
-      submitBtn.classList.add('loading');
-      
-      // Показать спиннер
-      const spinner = submitBtn.querySelector('.spinner-border');
-      spinner.classList.remove('d-none');
-    });
-    
-    // Обработка ошибок формы
-    form.addEventListener('formdata', function(e) {
-      const formData = e.formData;
-      let isValid = true;
-      
-      // Простая валидация (можно расширить)
-      for (const pair of formData.entries()) {
-        if (!pair[1]) {
-          isValid = false;
-          break;
-        }
-      }
-      
-      if (!isValid) {
-        document.getElementById('form-errors').textContent = 'Пожалуйста, заполните все поля';
-        submitBtn.disabled = false;
-        submitBtn.classList.remove('loading');
-        spinner.classList.add('d-none');
-        e.preventDefault();
-      }
-    });
-  }
-});
-</script>
 
 {% endblock %}

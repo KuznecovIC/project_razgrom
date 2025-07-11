@@ -11,6 +11,7 @@ from django.db import transaction
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 
 
 
@@ -179,6 +180,11 @@ def services_view(request):
     return render(request, 'core/services.html', {
         'services': services
     })
+
+def get_master_services(request, master_id):
+    master = get_object_or_404(Master, id=master_id)
+    services = master.services.filter(is_active=True).values('id', 'name', 'description', 'price')
+    return JsonResponse(list(services), safe=False)
 
 @login_required
 def order_list(request):

@@ -18,6 +18,8 @@ urlpatterns = [
     path('reviews/', views.review_list, name='review_list'),
     path('reviews/<int:pk>/', views.review_detail, name='review_detail'),
     path('reviews/delete/<int:review_id>/', login_required(views.delete_review), name='delete_review'),
+
+    path('api/master/<int:master_id>/services/', views.get_master_services, name='master_services'),
     
     # Маршруты для заказов
     path('orders/', login_required(views.order_list), name='order_list'),
