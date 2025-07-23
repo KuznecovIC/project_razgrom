@@ -7,6 +7,8 @@ from django.utils.translation import gettext_lazy as _
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 from datetime import datetime
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 
 class Service(models.Model):
@@ -100,7 +102,6 @@ class Service(models.Model):
         if hours > 0:
             return f"{hours} ч {minutes} мин"
         return f"{minutes} мин"
-    
 
 class Master(models.Model):
     """Модель мастера барбершопа"""
@@ -109,6 +110,7 @@ class Master(models.Model):
         upload_to='masters/',
         verbose_name="Фотография"
     )
+    services = models.ManyToManyField(Service, blank=True) 
     phone = models.CharField(max_length=20, verbose_name="Телефон")
     email = models.EmailField(verbose_name="Email", blank=True, null=True)
     description = models.TextField(verbose_name="Описание", blank=True)
@@ -238,7 +240,12 @@ class Review(models.Model):
         (4, '4 - Хорошо'),
         (5, '5 - Отлично'),
     ]
-
+    AI_STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved by AI'),
+        ('rejected', 'Rejected by AI'),
+        ('manual', 'Manual Review Required'),
+    ]
     text = models.TextField(verbose_name="Текст отзыва")
     client_name = models.CharField(
         max_length=100,
@@ -277,10 +284,45 @@ class Review(models.Model):
         verbose_name="Опубликован"
     )
 
+    ai_checked_status = models.CharField(
+        max_length=20,
+        choices=AI_STATUS_CHOICES,
+        default='pending',
+        verbose_name="AI Check Status"
+    )
+    def toggle_publish(self):
+        """Переключает статус публикации"""
+        self.is_published = not self.is_published
+        self.save()
+        return self.is_published
+
     def __str__(self):
         return f"Отзыв #{self.id} на {self.master.name} ({self.rating}/5)"
+
+    def ai_status_badge(self):
+        classes = {
+            "ai_checked_true": "bg-success",
+            "ai_cancelled": "bg-danger",
+            "ai_checked_in_progress": "bg-info",
+            "ai_checked_false": "bg-secondary"
+        }
+        return format_html(
+            '<span class="badge {}">{}</span>',
+            classes.get(self.ai_checked_status, "bg-secondary"),
+            self.get_ai_checked_status_display()
+        )
+    ai_status_badge.short_description = "Статус проверки"
+    ai_status_badge.admin_order_field = 'ai_checked_status'
+
+
+
+
 
     class Meta:
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
         ordering = ['-created_at']
+        permissions = [
+            ("can_moderate", "Может модерировать отзывы"),
+        ]
+                                        

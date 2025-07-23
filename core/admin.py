@@ -90,7 +90,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('id', 'master', 'client_name', 'rating_stars', 'is_published', 'created_at')
+    list_display = ('id', 'master', 'client_name', 'rating_stars', 'is_published', 'created_at','ai_status_badge')
     list_filter = ('rating', 'is_published', 'master')
     search_fields = ('client_name', 'text')
     readonly_fields = ('created_at', 'photo_preview')

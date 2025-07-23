@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .service-category {
+    margin-bottom: 1.5rem;
+}
+
+.service-item {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.service-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+body.dark-theme .service-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.card-body {
+    padding: 1.5rem !important;
+}
+    /* Стили для контейнера формы */
+    .master-form-container {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Заголовок формы */
+    .form-header {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Превью фотографии */
+    .form-preview {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin: 0 auto 1.5rem;
+        display: block;
+    }
+
+    /* Стили для полей ввода */
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+    }
+
+    /* Метки полей */
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Кнопка отправки */
+    .btn-submit {
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    /* Темная тема */
+    body.dark-theme .master-form-container {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
+
+    body.dark-theme .form-header {
+        border-bottom-color: #4a5568;
+    }
+
+    body.dark-theme .form-control,
+    body.dark-theme .form-select {
+        background-color: #1a202c;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+
+    body.dark-theme .form-control:focus,
+    body.dark-theme .form-select:focus {
+        background-color: #1a202c;
+        color: #e2e8f0;
+    }
+
+    body.dark-theme .form-label {
+        color: #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="master-form-container">
+    <!-- Заголовок формы -->
+    <div class="form-header">
+        <h2><i class="bi bi-person-plus me-2"></i>Добавление нового мастера</h2>
+        <p class="text-muted">Заполните все необходимые поля</p>
+    </div>
+
+    <!-- Форма добавления мастера -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Блок для загрузки фотографии -->
+        <div class="text-center mb-4">
+            <img id="photo-preview" src="{% static 'img/default-master.jpg' %}" class="form-preview">
+            <div class="mt-2">
+                <label for="id_photo" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-camera me-1"></i> Выбрать фото
+                </label>
+                {{ form.photo }}
+            </div>
+        </div>
+
+        <!-- Основные поля формы -->
+        <div class="row g-3">
+            <!-- Поле для имени -->
+            <div class="col-md-6">
+                <label for="id_name" class="form-label">Имя мастера</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.name.errors|first }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Поле для стажа -->
+            <div class="col-md-6">
+                <label for="id_experience" class="form-label">Стаж (лет)</label>
+                {{ form.experience }}
+                {% if form.experience.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.experience.errors|first }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Поле для описания -->
+            <div class="col-12">
+                <label for="id_description" class="form-label">Описание</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.description.errors|first }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Контактные данные -->
+            <div class="col-md-6">
+                <label for="id_phone" class="form-label">Телефон</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.phone.errors|first }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                <label for="id_email" class="form-label">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.email.errors|first }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Социальные сети -->
+            <div class="col-md-6">
+                <label for="id_instagram" class="form-label">Instagram</label>
+                <div class="input-group">
+                    <span class="input-group-text">@</span>
+                    {{ form.instagram }}
+                </div>
+                {% if form.instagram.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.instagram.errors|first }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Статус мастера -->
+            <div class="col-md-6">
+                <label class="form-label">Статус</label>
+                <div class="form-check form-switch">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="id_is_active">
+                        Активный мастер
+                    </label>
+                </div>
+            </div>
+
+<div class="col-12 mb-4">  <!-- Добавлен класс mb-4 для нижнего отступа -->
+    <label class="form-label">Услуги</label>
+    <div class="card mb-3">  <!-- Добавлен класс mb-3 для нижнего отступа -->
+        <div class="card-body p-4">  <!-- Добавлен класс p-4 для внутренних отступов -->
+            {% regroup form.services.field.queryset by get_category_display as service_list %}
+            {% for category in service_list %}
+                <div class="mb-3">
+                    <h6 class="fw-bold">{{ category.grouper }}</h6>
+                    <div class="row">
+                        {% for service in category.list %}
+                        <div class="col-md-4 mb-2">  <!-- Добавлен класс mb-2 для отступов между строками -->
+                            <div class="form-check">
+                                <input type="checkbox" name="services" value="{{ service.id }}" 
+                                       id="id_services_{{ forloop.counter }}" 
+                                       class="form-check-input"
+                                       {% if service.id in form.services.value %}checked{% endif %}>
+                                <label for="id_services_{{ forloop.counter }}" class="form-check-label">
+                                    {{ service.name }} - {{ service.price }}₽
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if not forloop.last %}<hr class="my-2">{% endif %}  <!-- Добавлены классы my-2 для отступов вокруг разделителя -->
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+        <!-- Кнопки формы -->
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'master_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Назад к списку
+            </a>
+            <button type="submit" class="btn btn-primary btn-submit">
+                <i class="bi bi-save me-1"></i> Сохранить мастера
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Скрипт для отображения превью фотографии
+    document.getElementById('id_photo').addEventListener('change', function(e) {
+        const preview = document.getElementById('photo-preview');
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Инициализация стилей формы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Добавляем классы Bootstrap ко всем полям ввода
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.classList.add('form-control');
+            if (input.type === 'file') {
+                input.classList.add('d-none');
+            }
+            if (input.type === 'checkbox') {
+                input.classList.remove('form-control');
+                input.classList.add('form-check-input');
+            }
+        });
+
+        // Особые настройки для поля Instagram
+        const instagramInput = document.getElementById('id_instagram');
+        if (instagramInput) {
+            instagramInput.classList.add('form-control');
+        }
+    });
+</script>
+{% endblock %}

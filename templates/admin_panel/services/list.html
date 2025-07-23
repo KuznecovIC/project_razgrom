@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .services-container {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem; /* Увеличенный отступ между карточками */
+    }
+
+    .service-card {
+        border: none;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-size: 1.2rem;
+    }
+
+    .service-price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-right: 1rem;
+    }
+
+    .service-duration {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .service-description {
+        color: #555;
+        margin: 1rem 0;
+        line-height: 1.5;
+    }
+
+    .service-meta {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.8rem;
+    }
+
+    .action-buttons {
+        margin-top: 1.2rem;
+    }
+
+    .action-buttons .btn {
+        border-radius: 8px;
+        padding: 0.45rem 1rem;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+        font-weight: 500;
+    }
+
+    .add-service-btn {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem; /* Отступ снизу */
+    }
+
+    .add-service-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(13, 110, 253, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        grid-column: 1 / -1; /* Занимает всю ширину */
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #adb5bd;
+        margin-bottom: 1rem;
+    }
+
+    /* Темная тема */
+    body.dark-theme .services-container {
+        background-color: #2b3035;
+    }
+
+    body.dark-theme .service-card {
+        background-color: #343a40;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark-theme .service-title {
+        color: #f8f9fa;
+    }
+
+    body.dark-theme .service-description {
+        color: #adb5bd;
+    }
+
+    body.dark-theme .empty-state {
+        background-color: #343a40;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="services-container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">
+                <i class="bi bi-list-check me-2"></i>Управление услугами
+            </h2>
+            <a href="{% url 'service_create' %}" class="btn add-service-btn">
+                <i class="bi bi-plus-circle me-1"></i> Добавить услугу
+            </a>
+        </div>
+
+        {% if services %}
+        <div class="services-grid mt-4"> <!-- Добавлен отступ сверху -->
+            {% for service in services %}
+            <div class="service-card">
+                <h5 class="service-title">{{ service.name }}</h5>
+                <div class="service-meta">
+                    <span class="service-price">{{ service.price }}₽</span>
+                    <span class="service-duration">{{ service.duration }} мин</span>
+                </div>
+                <p class="service-description">
+                    {{ service.description|truncatechars:120 }}
+                </p>
+                <div class="action-buttons">
+                    <a href="{% url 'service_edit' service.pk %}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Изменить
+                    </a>
+                    <a href="{% url 'service_delete' service.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> Удалить
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state mt-4"> <!-- Добавлен отступ сверху -->
+            <div class="empty-state-icon">
+                <i class="bi bi-list-ul"></i>
+            </div>
+            <h4>Нет доступных услуг</h4>
+            <p class="text-muted">Начните с добавления новой услуги</p>
+            <a href="{% url 'service_create' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-circle me-1"></i> Добавить услугу
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Анимация карточек при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.service-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100 * index);
+        });
+    });
+</script>
+{% endblock %}

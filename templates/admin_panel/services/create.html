@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .service-form-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+
+    .form-header:after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, #0d6efd, #6ea8fe);
+        border-radius: 3px;
+    }
+
+    .form-title {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.5rem;
+        font-size: 1.8rem;
+    }
+
+    .form-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.8rem;
+        position: relative;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.7rem;
+        display: flex;
+        align-items: center;
+        color: #495057;
+    }
+
+    .form-label .bi {
+        margin-right: 0.7rem;
+        font-size: 1.1rem;
+        color: #0d6efd;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 0.85rem 1.2rem;
+        border: 1px solid #dee2e6;
+        width: 100%;
+        transition: all 0.3s;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+        border: none;
+        padding: 0.8rem 2.2rem;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+    }
+
+    .btn-submit .bi {
+        margin-right: 0.6rem;
+        font-size: 1.1rem;
+    }
+
+    .btn-cancel {
+        background: white;
+        border: 1px solid #dee2e6;
+        padding: 0.8rem 2rem;
+        border-radius: 10px;
+        color: #495057;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-cancel:hover {
+        background: #f8f9fa;
+        border-color: #ced4da;
+    }
+
+    .btn-cancel .bi {
+        margin-right: 0.6rem;
+        font-size: 1.1rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-top: 1.5rem;
+    }
+
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-right: 0.7rem;
+        margin-top: 0;
+    }
+
+    .form-check-label {
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-label .bi {
+        margin-right: 0.6rem;
+        color: #0d6efd;
+    }
+
+    /* Темная тема */
+    body.dark-theme .service-form-container {
+        background: #2b3035;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border-color: #3a4149;
+    }
+
+    body.dark-theme .form-title {
+        color: #f8f9fa;
+    }
+
+    body.dark-theme .form-subtitle {
+        color: #adb5bd;
+    }
+
+    body.dark-theme .form-label {
+        color: #dee2e6;
+    }
+
+    body.dark-theme .form-control {
+        background: #343a40;
+        border-color: #495057;
+        color: #f8f9fa;
+    }
+
+    body.dark-theme .form-control:focus {
+        border-color: #86b7fe;
+        background: #343a40;
+    }
+
+    body.dark-theme .form-actions {
+        border-top-color: #3a4149;
+    }
+
+    body.dark-theme .btn-cancel {
+        background: #343a40;
+        border-color: #495057;
+        color: #f8f9fa;
+    }
+
+    body.dark-theme .btn-cancel:hover {
+        background: #3a4149;
+    }
+
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .service-form-container {
+        animation: fadeIn 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="service-form-container">
+        <div class="form-header">
+            <h2 class="form-title">
+                <i class="bi bi-plus-circle-fill me-2"></i>Новая услуга
+            </h2>
+            <p class="form-subtitle">Заполните форму для добавления новой услуги</p>
+        </div>
+
+<form method="POST" action="{% url 'service_create' %}" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    
+    <!-- Вывод сообщений об ошибках -->
+    {% if messages %}
+    <div class="alert alert-danger mb-4">
+        {% for message in messages %}
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <div>{{ message }}</div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="form-group">
+        <label for="id_name" class="form-label">
+            <i class="bi bi-card-heading"></i>Название услуги *
+        </label>
+        <input type="text" name="name" class="form-control" id="id_name" required>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="id_price" class="form-label">
+                    <i class="bi bi-currency-ruble"></i>Цена (₽) *
+                </label>
+                <input type="number" name="price" class="form-control" id="id_price" min="100" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="id_duration" class="form-label">
+                    <i class="bi bi-clock"></i>Длительность (мин) *
+                </label>
+                <input type="number" name="duration" class="form-control" id="id_duration" min="15" step="15" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="id_category" class="form-label">
+            <i class="bi bi-tags"></i>Категория *
+        </label>
+        <select name="category" class="form-select" id="id_category" required>
+            <option value="">Выберите категорию</option>
+            {% for value, label in form.fields.category.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="id_description" class="form-label">
+            <i class="bi bi-text-paragraph"></i>Описание
+        </label>
+        <textarea name="description" class="form-control" id="id_description" rows="3"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="id_image" class="form-label">
+            <i class="bi bi-image"></i>Изображение услуги
+        </label>
+        <input type="file" name="image" class="form-control" id="id_image" accept="image/*">
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" checked>
+                <label class="form-check-label" for="id_is_active">
+                    <i class="bi bi-power"></i> Активная услуга
+                </label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="id_is_popular" name="is_popular">
+                <label class="form-check-label" for="id_is_popular">
+                    <i class="bi bi-star-fill"></i> Популярная услуга
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a href="{% url 'service_list' %}" class="btn btn-cancel">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+        <button type="submit" class="btn btn-submit" id="submit-btn">
+            <i class="bi bi-save"></i> Создать услугу
+        </button>
+    </div>
+</form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Добавляем классы к полям формы и улучшаем UX
+    document.addEventListener('DOMContentLoaded', function() {
+        // Добавляем классы form-control ко всем полям ввода
+        const inputs = document.querySelectorAll('input:not([type="checkbox"]), textarea, select');
+        inputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+        
+        // Стилизация чекбокса
+        const checkbox = document.querySelector('#id_is_active');
+        if (checkbox) {
+            checkbox.classList.add('form-check-input');
+        }
+        
+        // Подсветка обязательных полей
+        const requiredFields = document.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            const label = document.querySelector(`label[for="${field.id}"]`);
+            if (label) {
+                label.innerHTML += '<span class="text-danger">*</span>';
+            }
+        });
+        
+        // Анимация при фокусе
+        const formControls = document.querySelectorAll('.form-control');
+        formControls.forEach(control => {
+            control.addEventListener('focus', function() {
+                this.parentElement.querySelector('label').style.color = '#0d6efd';
+            });
+            control.addEventListener('blur', function() {
+                this.parentElement.querySelector('label').style.color = '';
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем, что форма существует
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Убираем предыдущие сообщения об ошибках
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            
+            // Добавляем спиннер на кнопку
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Сохранение...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+    
+    // Добавляем классы для валидации
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('invalid', function() {
+            this.classList.add('is-invalid');
+        });
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

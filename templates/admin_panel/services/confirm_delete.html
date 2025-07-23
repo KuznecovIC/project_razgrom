@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .delete-confirm-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    .delete-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 1.5rem;
+    }
+
+    .delete-title {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 1rem;
+        font-size: 1.8rem;
+    }
+
+    .delete-message {
+        color: #6c757d;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .service-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+
+    .service-name {
+        font-weight: 600;
+        font-size: 1.2rem;
+        color: #212529;
+    }
+
+    .service-details {
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+
+    .delete-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        padding: 0.8rem 2.2rem;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-cancel {
+        background: white;
+        border: 1px solid #dee2e6;
+        padding: 0.8rem 2rem;
+        border-radius: 10px;
+        color: #495057;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-cancel:hover {
+        background: #f8f9fa;
+        border-color: #ced4da;
+    }
+
+    /* Темная тема */
+    body.dark-theme .delete-confirm-container {
+        background: #2b3035;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border-color: #3a4149;
+    }
+
+    body.dark-theme .delete-title {
+        color: #f8f9fa;
+    }
+
+    body.dark-theme .service-info {
+        background: #343a40;
+    }
+
+    body.dark-theme .service-name {
+        color: #f8f9fa;
+    }
+
+    body.dark-theme .btn-cancel {
+        background: #343a40;
+        border-color: #495057;
+        color: #f8f9fa;
+    }
+
+    body.dark-theme .btn-cancel:hover {
+        background: #3a4149;
+    }
+
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .delete-confirm-container {
+        animation: fadeIn 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="delete-confirm-container">
+        <div class="delete-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h2 class="delete-title">Подтвердите удаление</h2>
+        <p class="delete-message">Вы действительно хотите удалить эту услугу? Это действие нельзя отменить.</p>
+        
+        <div class="service-info">
+            <div class="service-name">{{ service.name }}</div>
+            <div class="service-details">
+                <div><i class="bi bi-currency-ruble"></i> Цена: {{ service.price }} ₽</div>
+                <div><i class="bi bi-clock"></i> Длительность: {{ service.duration_display }}</div>
+                <div><i class="bi bi-tag"></i> Категория: {{ service.get_category_display }}</div>
+            </div>
+        </div>
+
+        <form method="POST" action="{% url 'service_delete' service.pk %}">
+            {% csrf_token %}
+            <div class="delete-actions">
+                <a href="{% url 'service_list' %}" class="btn btn-cancel">
+                    <i class="bi bi-x-circle"></i> Отменить
+                </a>
+                <button type="submit" class="btn btn-delete">
+                    <i class="bi bi-trash"></i> Удалить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

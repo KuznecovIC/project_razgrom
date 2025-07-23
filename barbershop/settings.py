@@ -70,7 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'core.context_processors.nav_links',  # Наш контекстный процессор
+                'core.context_processors.nav_links', # Наш контекстный процессор
             ],
         },
     },
@@ -148,3 +148,8 @@ SESSION_COOKIE_SECURE = False  # True для production с HTTPS
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600  # 2 недели в секундах
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_API_KEY")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_USER_ID")
+
+

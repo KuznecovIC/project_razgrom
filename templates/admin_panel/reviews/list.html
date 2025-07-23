@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %} {# Убедитесь, что у вас есть custom_filters.py, если он используется #}
+
+{% block content %}
+
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-chat-square-text text-primary me-2"></i>
+      Управление отзывами
+    </h2>
+    <div class="d-flex gap-2">
+      <a href="{% url 'add_review' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Добавить отзыв
+      </a>
+    </div>
+  </div>
+
+  <div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+      <h5 class="mb-3"><i class="bi bi-filter me-2"></i>Фильтр отзывов</h5>
+      <form method="get">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label for="id_rating" class="form-label">Рейтинг</label>
+            <select name="rating" id="id_rating" class="form-select">
+              <option value="">Все оценки</option>
+              {% for i in "12345" %}
+              <option value="{{ i }}" {% if selected_rating == i|stringformat:"d" %}selected{% endif %}>
+                {{ i }} звезд{% if i == '1' %}а{% else %}{% if i == '2' or i == '3' or i == '4' %}ы{% else %}{% endif %}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="id_status" class="form-label">Статус</label>
+            <select name="status" id="id_status" class="form-select">
+              <option value="">Все статусы</option>
+              <option value="published" {% if selected_status == "published" %}selected{% endif %}>Опубликован</option>
+              <option value="unpublished" {% if selected_status == "unpublished" %}selected{% endif %}>Скрыт</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="id_ai_status" class="form-label">Проверка ИИ</label>
+            <select name="ai_status" id="id_ai_status" class="form-select">
+              <option value="">Все проверки</option>
+              <option value="ai_checked_true" {% if selected_ai_status == 'ai_checked_true' %}selected{% endif %}>Одобрено</option>
+              <option value="ai_cancelled" {% if selected_ai_status == 'ai_cancelled' %}selected{% endif %}>Отклонено</option>
+              <option value="ai_checked_in_progress" {% if selected_ai_status == 'ai_checked_in_progress' %}selected{% endif %}>Ожидает</option>
+              <option value="ai_check_failed" {% if selected_ai_status == 'ai_check_failed' %}selected{% endif %}>Ошибка</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="bi bi-funnel me-1"></i> Применить
+            </button>
+            <a href="?" class="btn btn-outline-secondary">
+              <i class="bi bi-x-circle"></i> Сбросить
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for review in page_obj %}
+    <div class="col-md-6 mb-4">
+      <div class="card h-100 border-0 shadow-sm review-card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="mb-1">
+                <i class="bi bi-person-circle me-2"></i>{{ review.client_name }}
+              </h5>
+              <small class="text-muted">
+                <i class="bi bi-calendar me-1"></i>
+                {{ review.created_at|date:"d.m.Y H:i" }}
+              </small>
+              <br>
+              <small class="text-muted">
+                <i class="bi bi-hash me-1"></i>ID: {{ review.id }}
+              </small>
+            </div>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <div class="rating-badge me-2">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= review.rating %}
+                    <i class="bi bi-star-fill text-warning"></i>
+                  {% else %}
+                    <i class="bi bi-star text-warning"></i>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              
+              {% if review.is_published %}
+              <span class="badge bg-success-subtle text-success">
+                  <i class="bi bi-check-circle-fill me-1"></i> Опубликован
+              </span>
+              {% else %}
+              <span class="badge bg-warning-subtle text-warning">
+                  <i class="bi bi-eye-slash-fill me-1"></i> Скрыт
+              </span>
+              {% endif %}
+
+              {% if review.ai_checked_status == 'ai_checked_true' %}
+              <span class="badge bg-primary-subtle text-primary">
+                  <i class="bi bi-robot me-1"></i> AI
+              </span>
+              {% elif review.ai_checked_status == 'ai_cancelled' %}
+              <span class="badge bg-danger-subtle text-danger">
+                  <i class="bi bi-robot me-1"></i> AI
+              </span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary">
+                  <i class="bi bi-hourglass-split me-1"></i> AI
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <p class="mb-2"><strong>Мастер:</strong></p>
+            <div class="d-flex align-items-center">
+              {% if review.master.photo %}
+              <img src="{{ review.master.photo.url }}" 
+                   class="rounded-circle me-3 border border-secondary-subtle" 
+                   width="50" height="50" 
+                   alt="{{ review.master.name }}" style="object-fit: cover;">
+              {% else %}
+              <div class="rounded-circle me-3 bg-light text-muted d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                <i class="bi bi-person-circle fs-4"></i>
+              </div>
+              {% endif %}
+              <div>
+                <h6 class="mb-0">{{ review.master.name }}</h6>
+                <small class="text-muted">{{ review.master.experience }} лет опыта</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="review-text">
+            <p class="mb-0 text-dark">{{ review.text|linebreaks }}</p>
+          </div>
+          
+          {% if review.photo %}
+          <div class="mt-3">
+            <img src="{{ review.photo.url }}" 
+                 class="img-fluid rounded border border-light-subtle" 
+                 alt="Фото отзыва" style="max-height: 200px; object-fit: cover;">
+          </div>
+          {% endif %}
+          
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{% url 'admin_review_edit' review.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-pencil-square me-1"></i> Редактировать
+            </a>
+            {% if review.is_published %}
+            <a href="{% url 'admin_review_toggle_publish' review.id %}" class="btn btn-sm btn-outline-warning">
+              <i class="bi bi-eye-slash me-1"></i> Скрыть
+            </a>
+            {% else %}
+            <a href="{% url 'admin_review_toggle_publish' review.id %}" class="btn btn-sm btn-outline-success">
+              <i class="bi bi-eye me-1"></i> Опубликовать
+            </a>
+            {% endif %}
+            <a href="{% url 'admin_review_delete' review.id %}" class="btn btn-sm btn-outline-danger" 
+                       onclick="return confirm('Вы уверены, что хотите удалить этот отзыв?')">
+              <i class="bi bi-trash me-1"></i> Удалить
+            </a>
+          </div>
+
+          <div class="text-end text-muted mt-3">
+            <small>IP: {{ review.ip_address|default:"не указан" }}</small><br>
+            <small>Изменен: {{ review.updated_at|date:"d.m.Y H:i"|default:"нет" }}</small>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+          <i class="bi bi-chat-square-text text-muted" style="font-size: 3rem;"></i>
+          <h4 class="mt-3">Отзывов пока нет</h4>
+          <p class="text-muted">Попробуйте изменить параметры фильтрации или добавить новый отзыв!</p>
+          <div class="d-flex justify-content-center gap-2 mt-3">
+            <a href="?" class="btn btn-outline-primary">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Сбросить фильтры
+            </a>
+            <a href="{% url 'add_review' %}" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-1"></i> Добавить отзыв
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav aria-label="Пагинация отзывов" class="mt-4">
+    <ul class="pagination justify-content-center flex-wrap">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ai_status %}&ai_status={{ request.GET.ai_status }}{% endif %}">
+          &laquo;&laquo;
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ai_status %}&ai_status={{ request.GET.ai_status }}{% endif %}">
+          &laquo;
+        </a>
+      </li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          {% if page_obj.number == num %}
+          <li class="page-item active" aria-current="page">
+            <span class="page-link">{{ num }}</span>
+          </li>
+          {% else %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ai_status %}&ai_status={{ request.GET.ai_status }}{% endif %}">
+              {{ num }}
+            </a>
+          </li>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ai_status %}&ai_status={{ request.GET.ai_status }}{% endif %}">
+          &raquo;
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ai_status %}&ai_status={{ request.GET.ai_status }}{% endif %}">
+          &raquo;&raquo;
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<style>
+  .review-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  
+  .rating-badge {
+    background: rgba(255, 193, 7, 0.1); /* light yellow */
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px; /* Small gap between stars */
+  }
+  
+  .review-text {
+    background: var(--bs-light-rgb); /* Using Bootstrap variable for light background */
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+  }
+  
+  .btn-group .btn {
+    border-radius: 20px !important;
+    margin-right: 5px; /* Adjust spacing for buttons */
+  }
+
+  /* Для темной темы (предполагается, что Bootstrap настроен на поддержку темной темы) */
+  [data-bs-theme="dark"] .review-text {
+    background: var(--bs-gray-dark); /* Пример: более темный фон для текста */
+    color: var(--bs-white); /* Белый текст в темной теме */
+  }
+  [data-bs-theme="dark"] .text-dark {
+    color: var(--bs-white) !important; /* Принудительно белый текст */
+  }
+  [data-bs-theme="dark"] .card {
+    background-color: var(--bs-gray-800); /* Темный фон для карточек */
+    border-color: var(--bs-gray-700); /* Темная граница для карточек */
+  }
+  [data-bs-theme="dark"] .form-control,
+  [data-bs-theme="dark"] .form-select {
+      background-color: var(--bs-gray-700);
+      color: var(--bs-white);
+      border-color: var(--bs-gray-600);
+  }
+</style>
+{% endblock %}

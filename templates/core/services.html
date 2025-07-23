@@ -1,6 +1,225 @@
-<h1>Наши услуги</h1>
-<ul>
-    {% for service in services %}
-    <li>{{ service.name }} - {{ service.price }} руб.</li>
-    {% endfor %}
-</ul>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .services-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    
+    .services-header:after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(90deg, #0d6efd, #6ea8fe);
+        border-radius: 3px;
+    }
+    
+    .service-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .service-card-header {
+        padding: 1.5rem;
+        border-bottom: none;
+    }
+    
+    .popular-service .service-card-header {
+        background: linear-gradient(135deg, #2fdb46ff, #73ff49ff);
+    }
+    
+    .regular-service .service-card-header {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    }
+    
+    .service-badge {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .service-title {
+        font-weight: 700;
+        margin: 0.5rem 0 0;
+    }
+    
+    .service-body {
+        padding: 1.5rem;
+    }
+    
+    .service-description {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+    
+    .service-details {
+        border: none;
+    }
+    
+    .service-details-item {
+        padding: 0.75rem 1.25rem;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .service-details-item:first-child {
+        border-top: none;
+    }
+    
+    .service-price {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+    
+    .service-duration {
+        color: #6c757d;
+    }
+    
+    .section-title {
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: 2rem;
+    }
+    
+    .section-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #0d6efd, #6ea8fe);
+        border-radius: 3px;
+    }
+    
+    /* Темная тема */
+    body.dark-theme .service-description,
+    body.dark-theme .service-duration {
+        color: #adb5bd;
+    }
+    
+    body.dark-theme .service-card {
+        background-color: #2b3035;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    body.dark-theme .service-card:hover {
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    body.dark-theme .service-body {
+        background-color: #2b3035;
+    }
+    
+    body.dark-theme .service-details-item {
+        background-color: #2b3035;
+        border-color: #3a4149;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="services-header">
+        <h1>Наши услуги</h1>
+        <p class="lead text-muted">Профессиональные услуги для вашего комфорта</p>
+    </div>
+    
+    {% if popular_services %}
+    <div class="mb-5">
+        <h2 class="section-title">Популярные услуги</h2>
+        <div class="row">
+            {% for service in popular_services %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="service-card popular-service">
+                    <div class="service-card-header text-white">
+                        <span class="service-badge">Хит</span>
+                        <h3 class="service-title">{{ service.name }}</h3>
+                    </div>
+                    <div class="service-body">
+                        <p class="service-description">{{ service.description }}</p>
+                        <ul class="list-group service-details">
+                            <li class="list-group-item service-details-item d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-currency-ruble me-2"></i>Цена</span>
+                                <span class="service-price">{{ service.price }} руб.</span>
+                            </li>
+                            <li class="list-group-item service-details-item d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-clock me-2"></i>Длительность</span>
+                                <span class="service-duration">{{ service.duration }} мин.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="mb-5">
+        <h2 class="section-title">Все услуги</h2>
+        <div class="row">
+            {% for service in services %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="service-card regular-service">
+                    <div class="service-card-header text-white">
+                        <h3 class="service-title">{{ service.name }}</h3>
+                    </div>
+                    <div class="service-body">
+                        <p class="service-description">{{ service.description }}</p>
+                        <ul class="list-group service-details">
+                            <li class="list-group-item service-details-item d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-currency-ruble me-2"></i>Цена</span>
+                                <span class="service-price">{{ service.price }} руб.</span>
+                            </li>
+                            <li class="list-group-item service-details-item d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-clock me-2"></i>Длительность</span>
+                                <span class="service-duration">{{ service.duration }} мин.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Анимация карточек при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.service-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.5s ease ' + (index * 0.1) + 's';
+            
+            // Небольшая задержка для плавного появления
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

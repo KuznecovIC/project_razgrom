@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+    .masters-management {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .master-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .master-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .master-avatar {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+        border-radius: 50px;
+    }
+    
+    /* Темная тема */
+    body.dark-theme .masters-management {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    body.dark-theme .table {
+        color: #e2e8f0;
+    }
+    
+    body.dark-theme .table-striped>tbody>tr:nth-of-type(odd)>* {
+        --bs-table-accent-bg: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+    }
+    
+    body.dark-theme .table-striped>tbody>tr:nth-of-type(even)>* {
+        color: #e2e8f0;
+    }
+    
+    body.dark-theme .text-muted {
+        color: #a0aec0 !important;
+    }
+    
+    body.dark-theme .table-light {
+        --bs-table-bg: #1a202c;
+        --bs-table-striped-bg: #2d3748;
+        --bs-table-striped-color: #e2e8f0;
+        --bs-table-active-bg: #2d3748;
+        --bs-table-active-color: #e2e8f0;
+        --bs-table-hover-bg: #2d3748;
+        --bs-table-hover-color: #e2e8f0;
+        color: #e2e8f0;
+        border-color: #4a5568;
+    }
+    
+    body.dark-theme .status-badge {
+        color: white !important;
+    }
+
+        body.dark-theme .table-light th {
+        color: white !important;
+        background-color: #1a202c !important;
+        border-color: #4a5568 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="masters-management">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-scissors me-2"></i>Управление мастерами</h2>
+            <p class="text-muted mb-0">Всего мастеров: {{ masters.count }}</p>
+        </div>
+        <a href="{% url 'master_create' %}" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-lg me-2"></i> Добавить мастера
+        </a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 80px;">Фото</th>
+                    <th>Мастер</th>
+                    <th>Стаж</th>
+                    <th>Статус</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for master in masters %}
+                <tr class="master-card">
+                    <td>
+                        {% if master.photo %}
+                        <img src="{{ master.photo.url }}" class="master-avatar" alt="{{ master.name }}">
+                        {% else %}
+                        <div class="master-avatar bg-secondary d-flex align-items-center justify-content-center">
+                            <i class="bi bi-person-fill text-white"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <h6 class="mb-1 text-dark-emphasis">{{ master.name }}</h6>
+                        <p class="text-muted small mb-0">{{ master.description|truncatechars:40 }}</p>
+                    </td>
+                    <td>
+                        <span class="badge bg-info text-dark">
+                            {{ master.experience }} {{ master.experience|pluralize:"год,года,лет" }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if master.is_active %}
+                        <span class="status-badge bg-success text-white">
+                            <i class="bi bi-check-circle me-1"></i> Активен
+                        </span>
+                        {% else %}
+                        <span class="status-badge bg-secondary text-white">
+                            <i class="bi bi-pause-circle me-1"></i> Неактивен
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'master_edit' master.pk %}" 
+                               class="action-btn btn btn-primary"
+                               data-bs-toggle="tooltip" 
+                               title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'master_delete' master.pk %}" 
+                               class="action-btn btn btn-danger"
+                               data-bs-toggle="tooltip" 
+                               title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="bi bi-people text-muted" style="font-size: 2.5rem;"></i>
+                            <h5 class="mt-3">Мастеров не найдено</h5>
+                            <p class="text-muted">Добавьте первого мастера, нажав на кнопку выше</p>
+                            <a href="{% url 'master_create' %}" class="btn btn-primary mt-2">
+                                <i class="bi bi-plus-lg me-2"></i> Добавить мастера
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Инициализация тултипов
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Анимация при загрузке строк таблицы
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(-20px)';
+            
+            setTimeout(() => {
+                row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, 100 * index);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 3rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .warning-header {
+        position: relative;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+    
+    .warning-header:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 25%;
+        width: 50%;
+        height: 3px;
+        background: linear-gradient(90deg, #ff4d4d, #ff9999);
+        border-radius: 3px;
+    }
+    
+    .warning-icon {
+        font-size: 5rem;
+        color: #ff4d4d;
+        margin-bottom: 1.5rem;
+        animation: pulse 1.5s infinite;
+        text-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
+    }
+    
+    .master-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        background: #f9f9f9;
+        border-radius: 12px;
+        margin: 2rem 0;
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+    }
+    
+    .master-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+    
+    .master-photo {
+        width: 140px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 5px solid white;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .master-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .master-detail {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 0.25rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-delete {
+        background: linear-gradient(135deg, #ff4d4d 0%, #cc0000 100%);
+        border: none;
+        padding: 0.8rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+        border-radius: 8px;
+        color: white;
+        box-shadow: 0 5px 15px rgba(204, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-delete:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(204, 0, 0, 0.3);
+    }
+    
+    .btn-delete:active {
+        transform: translateY(1px);
+    }
+    
+    .btn-cancel {
+        background: white;
+        border: 2px solid #6c757d;
+        padding: 0.8rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+        border-radius: 8px;
+        color: #495057;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #f8f9fa;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.1);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    /* Темная тема */
+    body.dark-theme .delete-container {
+        background: #2b3035;
+        border-color: #3a4149;
+    }
+    
+    body.dark-theme .master-card {
+        background: #343a40;
+        border-color: #495057;
+    }
+    
+    body.dark-theme .master-name {
+        color: #f8f9fa;
+    }
+    
+    body.dark-theme .master-detail {
+        color: #adb5bd;
+    }
+    
+    body.dark-theme .btn-cancel {
+        background: #495057;
+        border-color: #6c757d;
+        color: white;
+    }
+    
+    body.dark-theme .btn-cancel:hover {
+        background: #3a4149;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="warning-header">
+        <div class="warning-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h2 class="fw-bold">Подтвердите удаление</h2>
+        <p class="lead">Вы собираетесь удалить мастера навсегда</p>
+    </div>
+    
+    <div class="master-card">
+        <img src="{% if master.photo %}{{ master.photo.url }}{% else %}{% static 'img/default-master.jpg' %}{% endif %}" 
+             class="master-photo">
+        <h3 class="master-name">{{ master.name }}</h3>
+        <p class="master-detail">Стаж: {{ master.experience }} год</p>
+        <p class="master-detail">Услуг: {{ master.services.count }}</p>
+    </div>
+    
+    <p class="text-muted mb-4">Это действие нельзя отменить. Все связанные данные будут удалены.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="action-buttons">
+            <a href="{% url 'master_list' %}" class="btn btn-cancel">
+                <i class="bi bi-arrow-left me-2"></i> Вернуться
+            </a>
+            <button type="submit" class="btn btn-delete">
+                <i class="bi bi-trash3 me-2"></i> Удалить мастера
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelector('.btn-delete').addEventListener('click', function(e) {
+        // Добавляем спиннер, но НЕ отменяем отправку формы
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Удаление...';
+        this.disabled = true;
+        
+        // Продолжаем отправку формы
+        this.form.submit();
+    });
+</script>
+{% endblock %}

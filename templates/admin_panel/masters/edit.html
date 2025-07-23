@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .master-edit-container {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        max-width: 900px;
+        margin: 2rem auto;
+        border: 1px solid #e9ecef;
+    }
+    
+    .form-preview {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin: 0 auto 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .service-card {
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+        margin-top: 1rem;
+    }
+    
+    .service-category {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .service-item {
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+        border-radius: 6px;
+        background-color: white;
+        transition: all 0.2s ease;
+    }
+    
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .card-header {
+        background: #0d6efd;
+        padding: 1rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .form-footer {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    /* Темная тема */
+    body.dark-theme .master-edit-container {
+        background-color: #2b3035;
+        border-color: #3a4149;
+    }
+    
+    body.dark-theme .service-card {
+        background-color: #2b3035;
+        border-color: #3a4149;
+    }
+    
+    body.dark-theme .service-category {
+        background: #343a40;
+    }
+    
+    body.dark-theme .service-item {
+        background-color: #3a4149;
+    }
+    
+    body.dark-theme .card-header {
+        background: #0b5ed7;
+    }
+
+    body.dark-theme .form-footer {
+        border-top-color: #3a4149;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="master-edit-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="bi bi-person-gear me-2"></i>Редактирование мастера
+        </h2>
+        <a href="{% url 'master_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Назад к списку
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row g-4">
+            <!-- Левая колонка - фото и основная информация -->
+            <div class="col-md-6">
+                <div class="text-center">
+                    <img id="photo-preview" src="{% if form.instance.photo %}{{ form.instance.photo.url }}{% else %}{% static 'img/default-master.jpg' %}{% endif %}" 
+                         class="form-preview">
+                    <div class="mt-2">
+                        <label for="id_photo" class="btn btn-outline-primary">
+                            <i class="bi bi-camera me-1"></i> Изменить фото
+                        </label>
+                        {{ form.photo }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Имя мастера</label>
+                    {{ form.name }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Стаж (лет)</label>
+                    {{ form.experience }}
+                </div>
+                
+                <div class="form-check form-switch mb-3">
+                    {{ form.is_active }}
+                    <label class="form-check-label fw-semibold" for="id_is_active">
+                        Активный мастер
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Правая колонка - контакты -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="bi bi-telephone me-2"></i>Контактная информация
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Телефон</label>
+                            {{ form.phone }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            {{ form.email }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Instagram</label>
+                            <div class="input-group">
+                                <span class="input-group-text">@</span>
+                                {{ form.instagram }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Описание</label>
+                            {{ form.description }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка услуг (теперь в отдельном ряду) -->
+            <div class="col-12 mt-3">
+                <div class="card service-card">
+                    <div class="card-header">
+                        <i class="bi bi-scissors me-2"></i>Услуги мастера
+                    </div>
+                    <div class="card-body p-3">
+                        {% regroup form.services.field.queryset by get_category_display as service_list %}
+                        {% for category in service_list %}
+                            <div class="service-category mb-2">
+                                <h6 class="fw-bold mb-2">{{ category.grouper }}</h6>
+                                {% for service in category.list %}
+                                    <div class="form-check service-item">
+                                        <input type="checkbox" name="services" value="{{ service.id }}" 
+                                               id="id_service_{{ service.id }}"
+                                               class="form-check-input"
+                                               {% if service in form.instance.services.all %}checked{% endif %}>
+                                        <label for="id_service_{{ service.id }}" class="form-check-label">
+                                            {{ service.name }} ({{ service.price }}₽)
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-footer d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle me-1"></i> Сохранить
+            </button>
+            <a href="{% url 'master_delete' form.instance.pk %}" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i> Удалить
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Превью фотографии
+    document.getElementById('id_photo').addEventListener('change', function(e) {
+        const preview = document.getElementById('photo-preview');
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}
