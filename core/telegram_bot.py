@@ -5,11 +5,11 @@ import asyncio
 from dotenv import load_dotenv
 # Загрузка переменных окружения из .env файла
 load_dotenv()
- 
- 
+
+
 # Настройка логирования
 logging.basicConfig(level=logging.DEBUG)
- 
+
 async def send_telegram_message(token, chat_id, message, parse_mode="Markdown"):
     try:
         bot = telegram.Bot(token=token)
@@ -18,7 +18,7 @@ async def send_telegram_message(token, chat_id, message, parse_mode="Markdown"):
     except Exception as e:
         logging.error(f"Ошибка отправки сообщения в чат {chat_id}: {e}")
         raise
- 
+
 # Тестируем отправку прямо тут
 if __name__ == "__main__":
     load_dotenv()
@@ -26,3 +26,6 @@ if __name__ == "__main__":
     TELEGRAM_USER_ID = os.getenv("TELEGRAM_USER_ID")
     message = "Тестовое сообщение"
     asyncio.run(send_telegram_message(TELEGRAM_BOT_API_KEY, TELEGRAM_USER_ID, message))
+
+def test_send():
+    print("Test send function is working!")

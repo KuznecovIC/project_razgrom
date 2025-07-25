@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator, FileExtensionValidator
 from django.utils import timezone
 from django.db import connection
 from django.contrib.auth.models import User
@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from datetime import datetime
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-
+import os
 
 class Service(models.Model):
     """Модель услуги барбершопа с расширенными возможностями"""
@@ -19,11 +19,14 @@ class Service(models.Model):
         BEARD = 'BD', _('Борода')
         COMPLEX = 'CX', _('Комплекс')
         OTHER = 'OT', _('Другое')
+        COLORING = 'CL', _('Окрашивание')  # Добавлена новая категория
+        HAIR_CARE = 'HR', _('Уход за волосами') 
 
     name = models.CharField(
         max_length=200,
         verbose_name=_("Название услуги"),
-        help_text=_("Полное название услуги для отображения клиентам")
+        help_text=_("Полное название услуги для отображения клиентам"),
+        unique=True  # Уникальное имя услуги
     )
     
     description = models.TextField(
@@ -43,7 +46,8 @@ class Service(models.Model):
     duration = models.PositiveIntegerField(
         verbose_name=_("Длительность"),
         default=30,
-        help_text=_("Продолжительность в минутах")
+        help_text=_("Продолжительность в минутах (от 15 до 240)"),
+        validators=[MinValueValidator(15), MaxValueValidator(240)]  # Добавлены ограничения
     )
     
     category = models.CharField(
@@ -67,10 +71,11 @@ class Service(models.Model):
     
     image = models.ImageField(
         verbose_name=_("Изображение"),
-        upload_to='services/',
+        upload_to='services/%Y/%m/%d/',  # Более структурированное хранение
         blank=True,
         null=True,
-        help_text=_("Изображение для карточки услуги")
+        help_text=_("Изображение для карточки услуги (рекомендуемый размер 800x600px)"),
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])]  # Проверка формата
     )
     
     created_at = models.DateTimeField(
@@ -86,6 +91,25 @@ class Service(models.Model):
     def __str__(self):
         return f"{self.name} ({self.get_category_display()}) - {self.price}₽"
 
+    def clean(self):
+        """Дополнительная валидация"""
+        if self.price < 100 and self.category != self.OTHER:
+            raise ValidationError(
+                {'price': _('Цена не может быть меньше 100 рублей для данной категории')}
+            )
+
+    def save(self, *args, **kwargs):
+        """Автоматическая обработка при сохранении"""
+        self.full_clean()  # Вызов полной валидации
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """Удаление связанного файла изображения"""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+
     class Meta:
         verbose_name = _("Услуга")
         verbose_name_plural = _("Услуги")
@@ -93,27 +117,57 @@ class Service(models.Model):
         indexes = [
             models.Index(fields=['is_active', 'is_popular']),
             models.Index(fields=['category']),
+            models.Index(fields=['price']),  # Добавлен индекс для цены
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'category'],
+                name='unique_service_name_per_category'
+            )
         ]
 
     @property
     def duration_display(self):
+        """Форматированное отображение длительности"""
         hours = self.duration // 60
         minutes = self.duration % 60
         if hours > 0:
             return f"{hours} ч {minutes} мин"
         return f"{minutes} мин"
-
+    
+    @property
+    def image_preview(self):
+        """Превью изображения для админки"""
+        if self.image:
+            return format_html(
+                '<img src="{}" style="max-height: 100px;" />', 
+                self.image.url
+            )
+        return _("Нет изображения")
+    
 class Master(models.Model):
     """Модель мастера барбершопа"""
     name = models.CharField(max_length=150, verbose_name="Имя")
     photo = models.ImageField(
         upload_to='masters/',
-        verbose_name="Фотография"
+        verbose_name="Фотография",
+        blank=True,  # Добавил blank=True
+        null=True    # Добавил null=True
     )
-    services = models.ManyToManyField(Service, blank=True) 
-    phone = models.CharField(max_length=20, verbose_name="Телефон")
-    email = models.EmailField(verbose_name="Email", blank=True, null=True)
-    description = models.TextField(verbose_name="Описание", blank=True)
+    phone = models.CharField(
+        max_length=20, 
+        verbose_name="Телефон",
+        validators=[RegexValidator(r'^\+?1?\d{9,15}$')]  # Добавил валидатор
+    )
+    email = models.EmailField(
+        verbose_name="Email", 
+        blank=True, 
+        null=True
+    )
+    description = models.TextField(
+        verbose_name="Описание", 
+        blank=True
+    )
     instagram = models.CharField(
         max_length=50,
         verbose_name="Instagram",
@@ -121,12 +175,14 @@ class Master(models.Model):
     )
     experience = models.PositiveIntegerField(
         verbose_name="Стаж (лет)",
-        default=0
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)]  # Добавил валидаторы
     )
     services = models.ManyToManyField(
-        Service,
+        'Service',  # Используем строку вместо прямого обращения к классу
         related_name='masters',
-        verbose_name="Услуги"
+        verbose_name="Услуги",
+        blank=True
     )
     is_active = models.BooleanField(
         default=True,
@@ -140,7 +196,10 @@ class Master(models.Model):
         verbose_name = "Мастер"
         verbose_name_plural = "Мастера"
         ordering = ['name']
-
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['is_active']),
+        ]
 
 class Order(models.Model):
     STATUS_NEW = 'new'
@@ -203,8 +262,7 @@ class Order(models.Model):
             if booking_time < timezone.now():
                 raise ValidationError('Выбранное время уже прошло')
 
-    def total_price(self):
-        """Вычисление общей стоимости услуг"""
+    def get_total_price(self):
         return sum(service.price for service in self.services.all())
 
     @property
@@ -219,7 +277,7 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Запись #{self.display_number} - {self.client_name} ({self.date})"
-
+    
     class Meta:
         verbose_name = "Запись"
         verbose_name_plural = "Записи"
@@ -229,7 +287,6 @@ class Order(models.Model):
             models.Index(fields=['master', 'date']),
             models.Index(fields=['user']),
         ]
-
 
 class Review(models.Model):
     """Модель отзыва о мастере"""

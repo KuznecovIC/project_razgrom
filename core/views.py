@@ -11,7 +11,8 @@ from django.core.exceptions import ValidationError
 from .models import Master, Service, Order, Review # Ensure all models are imported
 from .forms import OrderForm, OrderSearchForm, ReviewForm, MasterForm, ServiceForm, OrderStatusForm, ReviewPublishForm # Ensure all forms are imported
 from datetime import datetime, timedelta, date
-
+from .telegram_bot import send_telegram_message
+from django.http import HttpResponse
 
 # Инициализационные функции
 def init_masters():
@@ -200,7 +201,7 @@ def order_create(request):
             order = form.save(commit=False)
             order.user = request.user
             
-            # Дополнительная проверка услуг мастера
+            # Проверка услуг мастера
             master = order.master
             selected_services = form.cleaned_data['services']
             master_services = master.services.all()
@@ -795,3 +796,9 @@ def services_view(request):
         'popular_services': popular_services,
         'services': services
     })
+
+
+def test_telegram(request):
+    if send_telegram_message("Тестовое сообщение от бота"):
+        return HttpResponse("Сообщение отправлено успешно")
+    return HttpResponse("Ошибка отправки сообщения", status=500)

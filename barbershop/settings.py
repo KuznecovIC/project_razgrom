@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'core', 
+    'core',  
 ]
 
 MIDDLEWARE = [
@@ -135,7 +135,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/orders/'  # Куда перенаправлять после входа
+LOGIN_REDIRECT_URL = '/orders/'  
 LOGOUT_REDIRECT_URL = '/'
 
 
@@ -144,12 +144,13 @@ SHELL_PLUS_PRINT_SQL = True
 
 # Настройки сессии
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-SESSION_COOKIE_SECURE = False  # True для production с HTTPS
+SESSION_COOKIE_SECURE = False
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 1209600  # 2 недели в секундах
+SESSION_COOKIE_AGE = 1209600 
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_API_KEY")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_USER_ID")
+TELEGRAM_BOT_API_KEY = os.getenv('TELEGRAM_BOT_API_KEY')
+TELEGRAM_USER_ID =os.getenv('TELEGRAM_USER_ID')
 
+MISTRAL_API_KEY = os.getenv('MISTRAL_API_KEY')
 
