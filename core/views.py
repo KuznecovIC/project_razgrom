@@ -9,10 +9,22 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .models import Master, Service, Order, Review # Ensure all models are imported
-from .forms import OrderForm, OrderSearchForm, ReviewForm, MasterForm, ServiceForm, OrderStatusForm, ReviewPublishForm # Ensure all forms are imported
+from .forms import OrderForm, OrderSearchForm, ReviewForm, MasterForm, ServiceForm, OrderStatusForm, ReviewPublishForm, RegisterForm, LoginForm
 from datetime import datetime, timedelta, date
 from .telegram_bot import send_telegram_message
 from django.http import HttpResponse
+from django.contrib.auth import login, logout, authenticate
+from django.core.mail import send_mail
+import logging
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.forms import SetPasswordForm
+from django.urls import reverse_lazy
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.sessions.models import Session
+
+User = get_user_model()
+logger = logging.getLogger(__name__)
 
 # Инициализационные функции
 def init_masters():
@@ -87,6 +99,15 @@ def landing(request):
                     order.save()
                     form.save_m2m()
                     request.session['last_order_id'] = order.id
+                    
+                    # ДОБАВЛЕНО: Для анонимных - сохраняем ID заказа в сессии и устанавливаем флаг для отображения кнопки
+                    if not request.user.is_authenticated:
+                        anonymous_orders = request.session.get('anonymous_orders', [])
+                        anonymous_orders.append(order.id)
+                        request.session['anonymous_orders'] = anonymous_orders
+                        request.session['show_my_orders'] = True # Устанавливаем флаг сразу после создания заказа
+                        request.session.modified = True
+
                     messages.success(request, 'Запись успешно создана! Ожидайте звонка для подтверждения.')
                     return redirect('thanks')
             except Exception as e:
@@ -142,15 +163,35 @@ def thanks(request):
     return render(request, 'thanks.html', {'order': order})
 
 
-# Представления для работы с заказами (User-specific)
-@login_required
+def get_anonymous_orders(request):
+    """Получает заказы анонимного пользователя из сессии"""
+    if not request.user.is_authenticated and 'anonymous_orders' in request.session:
+        return Order.objects.filter(id__in=request.session['anonymous_orders'])
+    return Order.objects.none()
+
+def has_order_access(request, order):
+    """Проверка прав доступа к заказу"""
+    if request.user.is_authenticated:
+        return request.user.is_staff or order.user == request.user
+    else:
+        return 'anonymous_orders' in request.session and order.id in request.session['anonymous_orders']
+
 def order_list(request):
-    """Список записей с пагинацией и поиском для пользователя."""
-    query = Q(user=request.user) | Q(phone=request.user.username)
+    """Список заказов для всех пользователей"""
+    if request.user.is_authenticated:
+        query = Q(user=request.user) | Q(phone=request.user.username)
+        if request.user.is_staff:
+            query = Q()  # Для персонала показываем все заказы
+        orders = Order.objects.filter(query)
+    else:
+        orders = get_anonymous_orders(request)
+        # Добавляем кнопку "Мои записи" для неавторизованных
+        request.session['show_my_orders'] = bool(orders.exists())
     
+    # Поиск
     search = request.GET.get('search', '')
     if search:
-        query &= (
+        orders = orders.filter(
             Q(client_name__icontains=search) |
             Q(phone__icontains=search) |
             Q(comment__icontains=search) |
@@ -158,11 +199,8 @@ def order_list(request):
             Q(services__name__icontains=search)
         )
 
-    orders = Order.objects.filter(query)\
-               .select_related('master', 'user')\
-               .prefetch_related('services')\
-               .order_by('-date', '-time')
-
+    orders = orders.select_related('master', 'user').prefetch_related('services').order_by('-date', '-time')
+    
     paginator = Paginator(orders, 10)
     page = request.GET.get('page')
 
@@ -175,31 +213,38 @@ def order_list(request):
 
     return render(request, 'orders/list.html', {
         'orders': orders,
-        'search': search
+        'search': search,
+        'user_authenticated': request.user.is_authenticated
     })
 
-@login_required
 def order_detail(request, pk):
-    """Детали заказа для пользователя."""
-    order_query = Order.objects.select_related('master').prefetch_related('services')
-    if not request.user.is_staff:
-        order = get_object_or_404(order_query, pk=pk, user=request.user)
-    else:
-        order = get_object_or_404(order_query, pk=pk)
-
+    """Просмотр заказа с проверкой прав доступа"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    # Проверка прав доступа
+    if not has_order_access(request, order):
+        messages.error(request, 'У вас нет доступа к этому заказу')
+        return redirect('order_list')
+    
     return render(request, 'orders/detail.html', {
         'order': order,
-        'total_price': order.total_price()
+        'total_price': order.get_total_price(),
+        'can_edit': has_order_access(request, order)
     })
 
-@login_required
 def order_create(request):
-    """Создание новой записи пользователем."""
+    """Создание новой записи с обработкой анонимных пользователей"""
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-            order.user = request.user
+            
+            if request.user.is_authenticated:
+                order.user = request.user
+                if not order.client_name:
+                    order.client_name = request.user.get_full_name() or request.user.username
+                if not order.phone:
+                    order.phone = request.user.username
             
             # Проверка услуг мастера
             master = order.master
@@ -208,8 +253,7 @@ def order_create(request):
             
             invalid_services = [s for s in selected_services if s not in master_services]
             if invalid_services:
-                messages.error(request, 
-                    f"Мастер {master.name} не предоставляет выбранные услуги")
+                messages.error(request, f"Мастер {master.name} не предоставляет выбранные услуги")
                 return render(request, 'orders/create.html', {
                     'form': form,
                     'masters': Master.objects.filter(is_active=True)
@@ -217,25 +261,40 @@ def order_create(request):
             
             order.save()
             form.save_m2m()
+            
+            # Для анонимных - сохраняем ID заказа в сессии
+            if not request.user.is_authenticated:
+                anonymous_orders = request.session.get('anonymous_orders', [])
+                anonymous_orders.append(order.id)
+                request.session['anonymous_orders'] = anonymous_orders
+                request.session.modified = True
+                # !!! ДОБАВИТЬ ЭТУ СТРОКУ !!!
+                request.session['show_my_orders'] = True # Устанавливаем флаг сразу после создания заказа
+            
             messages.success(request, 'Запись успешно создана!')
-            return redirect('order_list')
+            return redirect('order_detail', pk=order.pk)
     else:
-        form = OrderForm(initial={
-            'client_name': request.user.get_full_name() or request.user.username,
-            'phone': request.user.username
-        })
+        initial_data = {}
+        if request.user.is_authenticated:
+            initial_data.update({
+                'client_name': request.user.get_full_name() or request.user.username,
+                'phone': request.user.username,
+                'email': request.user.email
+            })
+        
+        form = OrderForm(initial=initial_data)
     
     return render(request, 'orders/create.html', {
         'form': form,
-        'masters': Master.objects.filter(is_active=True)
+        'masters': Master.objects.filter(is_active=True),
+        'user_authenticated': request.user.is_authenticated
     })
 
-
-@login_required
 def order_edit(request, pk):
-    """Редактирование записи пользователем."""
+    """Редактирование заказа с проверкой прав"""
     order = get_object_or_404(Order, pk=pk)
-    if not request.user.is_staff and order.user != request.user:
+    
+    if not has_order_access(request, order):
         messages.error(request, 'У вас нет прав для редактирования этой записи.')
         return redirect('order_list')
 
@@ -244,33 +303,44 @@ def order_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Запись успешно обновлена!')
-            return redirect('order_detail', pk=order.id)
+            return redirect('order_detail', pk=order.pk)
     else:
         form = OrderForm(instance=order)
         form.fields['master'].queryset = Master.objects.filter(is_active=True)
+        if order.master:
+            form.fields['services'].queryset = order.master.services.filter(is_active=True)
 
     return render(request, 'orders/edit.html', {
         'form': form,
-        'order': order
+        'order': order,
+        'can_edit': True
     })
 
-@login_required
 def order_delete(request, pk):
-    """Удаление записи пользователем."""
+    """Удаление заказа с проверкой прав"""
     order = get_object_or_404(Order, pk=pk)
-    if not request.user.is_staff and order.user != request.user:
+    
+    if not has_order_access(request, order):
         messages.error(request, 'У вас нет прав для удаления этой записи.')
         return redirect('order_list')
 
     if request.method == 'POST':
         order.delete()
+        
+        # Удаляем из сессии анонимного пользователя
+        if not request.user.is_authenticated and 'anonymous_orders' in request.session:
+            request.session['anonymous_orders'] = [
+                oid for oid in request.session['anonymous_orders'] if oid != order.id
+            ]
+            request.session.modified = True
+        
         messages.success(request, 'Запись успешно удалена!')
         return redirect('order_list')
-
+    
     return render(request, 'orders/confirm_delete.html', {
-        'order': order
+        'order': order,
+        'can_delete': True
     })
-
 
 # Административные представления (Admin-specific)
 @user_passes_test(lambda u: u.is_staff)
@@ -802,3 +872,65 @@ def test_telegram(request):
     if send_telegram_message("Тестовое сообщение от бота"):
         return HttpResponse("Сообщение отправлено успешно")
     return HttpResponse("Ошибка отправки сообщения", status=500)
+
+def register_view(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)  # Сначала не сохраняем в базу
+            user.set_password(form.cleaned_data['password1'])  # Хэшируем пароль
+            user.save()  # Теперь сохраняем
+            login(request, user)  # Автоматически входим
+            messages.success(request, 'Регистрация успешна!')
+            return redirect('landing')  # Проверьте имя URL в urls.py
+        else:
+            # Добавим отладочный вывод ошибок формы
+            print("Ошибки формы:", form.errors)
+            messages.error(request, 'Исправьте ошибки в форме')
+    else:
+        form = RegisterForm()
+    return render(request, 'core/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            
+            if not form.cleaned_data['remember_me']:
+                request.session.set_expiry(0)
+            
+            messages.success(request, f'Добро пожаловать, {user.username}!')
+            next_url = request.GET.get('next', settings.LOGIN_REDIRECT_URL)
+            return redirect(next_url)
+    else:
+        form = LoginForm()
+    return render(request, 'core/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    messages.info(request, 'Вы успешно вышли из системы.')
+    return redirect('landing')  
+
+def test_email(request):
+    send_mail(
+        'Тестовое письмо',
+        'Проверка отправки почты.',
+        'from@example.com',
+        ['to@example.com'],
+        fail_silently=False,
+    )
+    return HttpResponse("Проверьте почту или консоль сервера")
+
+class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = 'registration/password_reset_confirm.html'
+    form_class = SetPasswordForm
+    success_url = reverse_lazy('password_reset_complete')
+
+    def form_valid(self, form):
+        logger.info("Password reset form is valid")
+        response = super().form_valid(form)
+        user = form.save()
+        logger.info(f"Password changed for user {user.username}")
+        return response

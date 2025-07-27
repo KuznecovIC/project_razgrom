@@ -1,66 +1,107 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-8 col-lg-6">
             <!-- Карточка с формой входа -->
-            <div class="card shadow">
-                <!-- Заголовок карточки -->
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Вход в систему</h3>
+            <div class="card shadow-lg border-0">
+                <!-- Заголовок карточки с градиентом -->
+                <div class="card-header bg-primary bg-gradient text-white py-4">
+                    <h2 class="mb-0 text-center">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Вход в систему
+                    </h2>
                 </div>
                 
                 <!-- Тело карточки с формой -->
-                <div class="card-body">
-                    <form method="post" novalidate>
+                <div class="card-body p-4 p-md-5">
+                    <!-- Сообщения системы -->
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
                         
-                        <!-- Блок для отображения ошибок -->
-                        {% if form.errors %}
-                        <div class="alert alert-danger">
-                            Неправильное имя пользователя или пароль
-                        </div>
-                        {% endif %}
-                        
                         <!-- Поле для ввода логина -->
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Логин</label>
-                            <input type="text" 
-                                   name="username" 
-                                   class="form-control" 
-                                   required 
-                                   id="id_username"
-                                   placeholder="Введите ваш логин">
+                        <div class="mb-4">
+                            <label for="id_username" class="form-label fw-bold">
+                                <i class="bi bi-person-fill me-2"></i>Имя пользователя
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" 
+                                       name="username" 
+                                       class="form-control form-control-lg" 
+                                       required 
+                                       id="id_username"
+                                       placeholder="Введите ваш логин">
+                            </div>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите имя пользователя
+                            </div>
                         </div>
                         
                         <!-- Поле для ввода пароля -->
-                        <div class="mb-3">
-                            <label for="id_password" class="form-label">Пароль</label>
-                            <input type="password" 
-                                   name="password" 
-                                   class="form-control" 
-                                   required 
-                                   id="id_password"
-                                   placeholder="Введите ваш пароль">
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label fw-bold">
+                                <i class="bi bi-lock-fill me-2"></i>Пароль
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-key"></i>
+                                </span>
+                                <input type="password" 
+                                       name="password" 
+                                       class="form-control form-control-lg" 
+                                       required 
+                                       id="id_password"
+                                       placeholder="Введите ваш пароль">
+                            </div>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите пароль
+                            </div>
                         </div>
                         
-                        <!-- Скрытое поле для перенаправления после входа -->
+                        <!-- Чекбокс "Запомнить меня" -->
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                            <label class="form-check-label" for="remember_me">
+                                Запомнить меня
+                            </label>
+                        </div>
+                        
+                        <!-- Скрытое поле для перенаправления -->
                         <input type="hidden" name="next" value="{{ next }}">
                         
                         <!-- Кнопка отправки формы -->
-                        <button type="submit" class="btn btn-primary w-100 py-2">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти
-                        </button>
-                        
-                        <!-- Ссылка на регистрацию -->
-                        <div class="mt-3 text-center">
-                            Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg py-3">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                            </button>
                         </div>
                         
-                        <!-- Ссылка на восстановление пароля -->
-                        <div class="text-center mt-2">
-                            <a href="{% url 'password_reset' %}">Забыли пароль?</a>
+                        <!-- Дополнительные ссылки -->
+                        <div class="text-center">
+                            <p class="mb-2">
+                                Нет аккаунта? 
+                                <a href="{% url 'register' %}" class="text-decoration-none fw-bold">
+                                    <i class="bi bi-person-plus me-1"></i>Зарегистрируйтесь
+                                </a>
+                            </p>
+                            <p class="mb-0">
+                                <a href="{% url 'password_reset' %}" class="text-decoration-none">
+                                    <i class="bi bi-question-circle me-1"></i>Забыли пароль?
+                                </a>
+                            </p>
                         </div>
                     </form>
                 </div>
@@ -70,45 +111,101 @@
 </div>
 
 <style>
-    /* Стили для формы входа */
+    /* Основные стили */
     .card {
-        border-radius: 10px;
+        border-radius: 15px;
         overflow: hidden;
+        border: none;
     }
     
     .card-header {
-        padding: 1.5rem;
-        text-align: center;
+        border-bottom: none;
     }
     
-    .card-body {
-        padding: 2rem;
+    .form-control, .input-group-text {
+        border-radius: 8px !important;
     }
     
-    .form-control {
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        border: 1px solid #ced4da;
+    .input-group-text {
+        background-color: #f8f9fa;
     }
     
-    .form-control:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-2px);
+    }
+    
+    /* Анимация для карточки */
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
     
     /* Адаптация для темной темы */
-    .dark-theme .card {
-        background-color: #2c2c2c;
-    }
-    
-    .dark-theme .form-control {
-        background-color: #1e1e1e;
-        border-color: #3a3a3a;
-        color: #ffffff;
-    }
-    
-    .dark-theme a {
-        color: #86b7fe;
+    @media (prefers-color-scheme: dark) {
+        body {
+            background-color: #1a1a1a;
+        }
+        
+        .card {
+            background-color: #2d2d2d;
+            color: #f8f9fa;
+        }
+        
+        .form-control, .input-group-text {
+            background-color: #3d3d3d;
+            border-color: #4d4d4d;
+            color: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            background-color: #3d3d3d;
+            color: #f8f9fa;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .input-group-text {
+            background-color: #2d2d2d;
+            color: #adb5bd;
+        }
+        
+        a {
+            color: #86b7fe;
+        }
     }
 </style>
+
+<script>
+    // Валидация формы
+    (function () {
+        'use strict'
+        
+        // Получаем все формы, к которым нужно применить кастомную валидацию Bootstrap
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        // Перебираем их и предотвращаем отправку
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
 {% endblock %}

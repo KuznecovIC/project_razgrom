@@ -250,7 +250,9 @@ class Order(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
-        related_name='orders'  # Добавлено для удобства
+        related_name='orders',
+        null=True,  # Разрешаем NULL для анонимных пользователей
+        blank=True  # Разрешаем пустое значение в формах
     )
 
     def clean(self):

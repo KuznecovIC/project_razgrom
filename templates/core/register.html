@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- Карточка с формой регистрации -->
+            <div class="card shadow-lg border-0">
+                <!-- Заголовок карточки с градиентом -->
+                <div class="card-header bg-success bg-gradient text-white py-4">
+                    <h2 class="mb-0 text-center">
+                        <i class="bi bi-person-plus me-2"></i>Регистрация
+                    </h2>
+                </div>
+                
+                <!-- Тело карточки с формой -->
+                <div class="card-body p-4 p-md-5">
+                    <!-- Отладочная информация -->
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Ошибки формы:</h5>
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Сообщения системы -->
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" novalidate id="registerForm">
+                        {% csrf_token %}
+                        
+                        <!-- Поле для имени пользователя -->
+                        <div class="mb-4">
+                            <label for="id_username" class="form-label fw-bold">
+                                <i class="bi bi-person-badge me-2"></i>Имя пользователя
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" 
+                                       name="username" 
+                                       class="form-control form-control-lg {% if form.username.errors %}is-invalid{% endif %}" 
+                                       required 
+                                       id="id_username"
+                                       placeholder="Придумайте логин"
+                                       value="{{ form.username.value|default_if_none:'' }}">
+                            </div>
+                            <small class="form-text text-muted">Только буквы, цифры и @/./+/-/_</small>
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.username.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Поле для email -->
+                        <div class="mb-4">
+                            <label for="id_email" class="form-label fw-bold">
+                                <i class="bi bi-envelope-fill me-2"></i>Email
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-at"></i>
+                                </span>
+                                <input type="email" 
+                                       name="email" 
+                                       class="form-control form-control-lg {% if form.email.errors %}is-invalid{% endif %}" 
+                                       required 
+                                       id="id_email"
+                                       placeholder="Ваш email"
+                                       value="{{ form.email.value|default_if_none:'' }}">
+                            </div>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Поле для пароля -->
+                        <div class="mb-4">
+                            <label for="id_password1" class="form-label fw-bold">
+                                <i class="bi bi-lock-fill me-2"></i>Пароль
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-key"></i>
+                                </span>
+                                <input type="password" 
+                                       name="password1" 
+                                       class="form-control form-control-lg {% if form.password1.errors %}is-invalid{% endif %}" 
+                                       required 
+                                       id="id_password1"
+                                       placeholder="Придумайте пароль">
+                            </div>
+                            <small class="form-text text-muted">
+                                Минимум 8 символов, не только цифры
+                            </small>
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password1.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Подтверждение пароля -->
+                        <div class="mb-4">
+                            <label for="id_password2" class="form-label fw-bold">
+                                <i class="bi bi-lock-fill me-2"></i>Подтверждение пароля
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-key-fill"></i>
+                                </span>
+                                <input type="password" 
+                                       name="password2" 
+                                       class="form-control form-control-lg {% if form.password2.errors %}is-invalid{% endif %}" 
+                                       required 
+                                       id="id_password2"
+                                       placeholder="Повторите пароль">
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password2.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Кнопка отправки формы -->
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-success btn-lg py-3" id="submitBtn">
+                                <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
+                            </button>
+                        </div>
+                        
+                        <!-- Дополнительные ссылки -->
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Уже есть аккаунт? 
+                                <a href="{% url 'login' %}" class="text-decoration-none fw-bold">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Войти
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Основные стили */
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+    }
+    
+    .card-header {
+        border-bottom: none;
+    }
+    
+    .form-control, .input-group-text {
+        border-radius: 8px !important;
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+    
+    .btn-success {
+        background-color: #198754;
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-success:hover {
+        background-color: #157347;
+        transform: translateY(-2px);
+    }
+    
+    /* Анимация для карточки */
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Адаптация для темной темы */
+    @media (prefers-color-scheme: dark) {
+        body {
+            background-color: #1a1a1a;
+        }
+        
+        .card {
+            background-color: #2d2d2d;
+            color: #f8f9fa;
+        }
+        
+        .form-control, .input-group-text {
+            background-color: #3d3d3d;
+            border-color: #4d4d4d;
+            color: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            background-color: #3d3d3d;
+            color: #f8f9fa;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .input-group-text {
+            background-color: #2d2d2d;
+            color: #adb5bd;
+        }
+        
+        a {
+            color: #86b7fe;
+        }
+        
+        .form-text {
+            color: #adb5bd !important;
+        }
+    }
+</style>
+
+<script>
+    // Валидация формы
+    (function () {
+        'use strict'
+        
+        // Получаем все формы, к которым нужно применить кастомную валидацию Bootstrap
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        // Перебираем их и предотвращаем отправку
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+    
+    // Отладочный код для проверки отправки формы
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('Форма отправляется...');
+                
+                // Собираем данные формы для отладки
+                const formData = new FormData(form);
+                const formValues = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    formValues[key] = value;
+                }
+                
+                console.log('Данные формы:', formValues);
+                
+                // Показываем индикатор загрузки
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Регистрация...';
+                
+                // Для отладки: можно раскомментировать следующую строку, чтобы увидеть данные перед отправкой
+                // e.preventDefault();
+            });
+        }
+        
+        // Логирование ошибок валидации
+        const fields = ['username', 'email', 'password1', 'password2'];
+        fields.forEach(field => {
+            const el = document.getElementById(`id_${field}`);
+            if (el) {
+                el.addEventListener('invalid', function() {
+                    console.log(`Ошибка валидации поля ${field}:`, this.validationMessage);
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

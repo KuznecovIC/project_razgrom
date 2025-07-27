@@ -1,18 +1,73 @@
-# core/forms.py
-
 from django import forms
 from django.forms.widgets import CheckboxSelectMultiple, DateInput, TimeInput, FileInput
 from django.utils import timezone
 from datetime import date, timedelta
 import re
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import get_user_model
 from .models import Order, Master, Service, Review
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User
+User = get_user_model()
 
+class RegisterForm(UserCreationForm):
+    email = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'example@mail.com'
+        })
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2']
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Логин'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Пароль'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Подтверждение пароля'
+        })
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+        return user
+    
+class LoginForm(AuthenticationForm):
+    remember_me = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Логин'
+        })
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Пароль'
+        })
 
 class OrderForm(forms.ModelForm):
-    """Форма для создания/редактирования записи"""
     services = forms.ModelMultipleChoiceField(
-        queryset=Service.objects.none(),  # Будет переопределено в __init__
+        queryset=Service.objects.none(),
         widget=CheckboxSelectMultiple(attrs={
             'class': 'form-check-input service-checkbox',
             'id': 'services-select'
@@ -68,6 +123,7 @@ class OrderForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop('request_user', None)
         super().__init__(*args, **kwargs)
         self.fields['master'].queryset = Master.objects.filter(is_active=True)
         
@@ -87,7 +143,6 @@ class OrderForm(forms.ModelForm):
         self.fields['date'].widget.attrs['min'] = tomorrow.isoformat()
 
     def clean_phone(self):
-        """Проверка номера телефона"""
         phone = self.cleaned_data.get('phone', '')
         phone = ''.join(filter(str.isdigit, phone))
         if len(phone) not in (10, 11):
@@ -95,24 +150,20 @@ class OrderForm(forms.ModelForm):
         return phone
 
     def clean(self):
-        """Дополнительные проверки данных"""
         cleaned_data = super().clean()
         date_val = cleaned_data.get('date')
         time_val = cleaned_data.get('time')
         master = cleaned_data.get('master')
         services = cleaned_data.get('services', [])
         
-        # Проверка даты
         if date_val and date_val < date.today():
             self.add_error('date', 'Нельзя выбрать прошедшую дату')
             
-        # Проверка времени
         if date_val and time_val:
             booking_time = timezone.make_aware(timezone.datetime.combine(date_val, time_val))
             if booking_time < timezone.now():
                 self.add_error('time', 'Выбранное время уже прошло')
         
-        # Проверка соответствия услуг мастеру
         if master and services:
             master_services = master.services.all()
             invalid_services = [s for s in services if s not in master_services]
@@ -125,9 +176,10 @@ class OrderForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
-        """Сохранение формы с привязкой к пользователю"""
         instance = super().save(commit=False)
-        if hasattr(self, 'request_user'):
+        
+        # Привязываем пользователя если он авторизован
+        if self.request_user and self.request_user.is_authenticated:
             instance.user = self.request_user
         
         if commit:
@@ -135,9 +187,8 @@ class OrderForm(forms.ModelForm):
             self.save_m2m()
         
         return instance
-    
+
 class OrderSearchForm(forms.Form):
-    """Форма поиска записей"""
     SEARCH_FIELD_CHOICES = [
         ('client_name', 'По имени клиента'),
         ('phone', 'По телефону'),
@@ -161,9 +212,18 @@ class OrderSearchForm(forms.Form):
         required=False
     )
 
+class OrderStatusForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['status']
+        widgets = {
+            'status': forms.Select(attrs={
+                'class': 'form-select'
+            })
+        }
 
+# ================== ФОРМЫ ОТЗЫВОВ ==================
 class ReviewForm(forms.ModelForm):
-    """Форма для отзывов"""
     RATING_CHOICES = [
         (1, '1 - Плохо'),
         (2, '2 - Удовлетворительно'),
@@ -209,13 +269,32 @@ class ReviewForm(forms.ModelForm):
         self.fields['master'].queryset = Master.objects.filter(is_active=True)
         self.fields['master'].label_from_instance = lambda obj: f"{obj.name} ({obj.experience} лет опыта)"
 
+class AdminReviewForm(ReviewForm):
+    class Meta(ReviewForm.Meta):
+        fields = ['client_name', 'text', 'rating', 'photo', 'master', 'is_published']
+        widgets = {
+            **ReviewForm.Meta.widgets,
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            })
+        }
 
+class ReviewPublishForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['is_published']
+        widgets = {
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            })
+        }
+
+# ================== ФОРМЫ МАСТЕРОВ ==================
 class MasterForm(forms.ModelForm):
-    """Форма для мастера"""
     services = forms.ModelMultipleChoiceField(
         queryset=Service.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        required=False  # Важно: сделайте поле необязательным
+        required=False
     )
 
     class Meta:
@@ -251,25 +330,20 @@ class MasterForm(forms.ModelForm):
                 'class': 'form-control',
                 'min': 0
             }),
-            'services': forms.SelectMultiple(attrs={
-                'class': 'form-select'
-            }),
             'is_active': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
             })
         }
 
     def clean_phone(self):
-        """Проверка номера телефона"""
         phone = self.cleaned_data.get('phone', '')
         phone = ''.join(filter(str.isdigit, phone))
         if len(phone) not in (10, 11):
             raise forms.ValidationError('Введите корректный номер телефона (10 или 11 цифр)')
         return phone
 
-
+# ================== ФОРМЫ УСЛУГ ==================
 class ServiceForm(forms.ModelForm):
-    """Форма для услуг"""
     class Meta:
         model = Service
         fields = ['name', 'price', 'duration', 'description', 'category', 'is_active', 'is_popular', 'image']
@@ -318,53 +392,3 @@ class ServiceForm(forms.ModelForm):
         if duration < 15:
             raise forms.ValidationError('Длительность должна быть не менее 15 минут')
         return duration
-    
-class AdminReviewForm(ReviewForm):
-    """Форма отзыва для администратора с дополнительными полями"""
-    class Meta(ReviewForm.Meta):
-        fields = ['client_name', 'text', 'rating', 'photo', 'master', 'is_published']
-        widgets = {
-            **ReviewForm.Meta.widgets,
-            'is_published': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            })
-        }
-
-
-class OrderStatusForm(forms.ModelForm):
-    """Форма изменения статуса заказа"""
-    class Meta:
-        model = Order
-        fields = ['status']
-        widgets = {
-            'status': forms.Select(attrs={
-                'class': 'form-select'
-            })
-        }
-
-    def _update_errors(self, e):
-        # Этот метод вызывается, когда ModelForm обрабатывает ValidationError,
-        # возникающий из model.full_clean().
-        if hasattr(e, 'error_dict'):
-            for field, errors in e.error_dict.items():
-                if field not in self.fields:
-                    # Если ошибка для поля, которым эта форма не управляет,
-                    # добавляем ее как общую ошибку формы (non-field error).
-                    self.add_error(None, self.error_class([str(err) for err in errors]))
-                else:
-                    # Иначе добавляем ошибку к соответствующему полю формы.
-                    self.add_error(field, self.error_class([str(err) for err in errors]))
-        else: # Если это общая ошибка без привязки к полю
-            self.add_error(None, e.message)
-
-
-class ReviewPublishForm(forms.ModelForm):
-    """Форма публикации отзыва"""
-    class Meta:
-        model = Review
-        fields = ['is_published']
-        widgets = {
-            'is_published': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            })
-        }
