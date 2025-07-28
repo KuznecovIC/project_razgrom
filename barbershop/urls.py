@@ -30,8 +30,7 @@ urlpatterns = [
     # Основные маршруты
     path('', views.LandingView.as_view(), name='home'), # Изменено на LandingView
     path('landing/', views.LandingView.as_view(), name='landing'), # Если это та же главная страница, что и ''
-    # Если 'landing/' должен быть для формы, то нужно создать отдельный URL для формы,
-    # но по заданию 'landing' -> LandingView (TemplateView)
+    path('create-order-from-landing/', views.LandingOrderCreateView.as_view(), name='create_order_from_landing'), # НОВЫЙ URL для обработки формы
     path('thanks/', views.ThanksView.as_view(), name='thanks'), # Изменено на ThanksView
     path('services/', views.services_view, name='services'), # Функциональное представление
 

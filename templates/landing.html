@@ -357,7 +357,7 @@
       <div class="card border-0 shadow">
         <div class="card-body p-5">
           <h2 class="text-center mb-4">Записаться онлайн</h2>
-          <form method="post" action="{% url 'landing' %}" novalidate id="booking-form">
+          <form method="post" action="{% url 'create_order_from_landing' %}" novalidate id="booking-form">
             {% csrf_token %}
             
             {% if messages %}

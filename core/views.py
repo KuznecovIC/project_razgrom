@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.db import transaction
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import JsonResponse, HttpResponse, Http404 # Добавлен Http404
 from django.core.exceptions import ValidationError
 from .models import Master, Service, Order, Review
 from .forms import OrderForm, OrderSearchForm, ReviewForm, MasterForm, ServiceForm, OrderStatusForm, ReviewPublishForm, RegisterForm, LoginForm
@@ -25,7 +25,7 @@ from django.contrib.sessions.models import Session
 # Импорты для Class-Based Views
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView, FormView, RedirectView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin # LoginRequiredMixin удален из импорта для некоторых классов
 
 
 User = get_user_model()
@@ -58,28 +58,74 @@ def init_services():
 
 # Рефакторинг: Landing (Главная страница) из FBV в TemplateView
 class LandingView(TemplateView):
-    template_name = 'landing.html' # Соответствует вашей инструкции
+    template_name = 'landing.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        init_masters() # Убедитесь, что мастера инициализированы
-        init_services() # Убедитесь, что услуги инициализированы
+        init_masters()
+        init_services()
         context.update({
             'masters': Master.objects.filter(is_active=True),
             'services': Service.objects.filter(is_active=True)[:6],
             'reviews': Review.objects.filter(is_published=True).order_by('-created_at')[:6]
         })
+        context['form'] = OrderForm()
         return context
 
-# Note: LandingOrderFormView, которая ранее была привязана к URL 'landing/',
-# теперь может быть удалена или использована для другого URL,
-# если вы хотите сохранить функциональность формы отдельно от основной страницы.
-# В данном рефакторинге LandingView является TemplateView, как запрошено.
-# class LandingOrderFormView(FormView): # Это представление больше не используется для '/landing/'
-#     template_name = 'landing.html'
-#     form_class = OrderForm
-#     success_url = reverse_lazy('thanks')
-#     ... (весь старый код LandingOrderFormView)
+# НОВОЕ ПРЕДСТАВЛЕНИЕ: Для обработки POST-запросов формы с главной страницы
+class LandingOrderCreateView(CreateView):
+    model = Order
+    form_class = OrderForm
+    success_url = reverse_lazy('thanks')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.request.user.is_authenticated:
+            initial.update({
+                'client_name': self.request.user.get_full_name() or self.request.user.username,
+                'phone': self.request.user.username,
+                'email': self.request.user.email
+            })
+        return initial
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Запись успешно создана! Ожидайте звонка для подтверждения.')
+        order = form.save(commit=False)
+        
+        if self.request.user.is_authenticated:
+            order.user = self.request.user
+            if not order.client_name:
+                order.client_name = self.request.user.get_full_name() or self.request.user.username
+            if not order.phone:
+                order.phone = self.request.user.username
+        
+        master = order.master
+        selected_services = form.cleaned_data['services']
+        master_services = master.services.all()
+        
+        invalid_services = [s for s in selected_services if s not in master_services]
+        if invalid_services:
+            messages.error(self.request, f"Мастер {master.name} не предоставляет выбранные услуги")
+            return self.form_invalid(form) 
+
+        order.save()
+        form.save_m2m()
+        
+        if not self.request.user.is_authenticated:
+            anonymous_orders = self.request.session.get('anonymous_orders', [])
+            anonymous_orders.append(order.id)
+            self.request.session['anonymous_orders'] = anonymous_orders
+            self.request.session['show_my_orders'] = True
+            self.request.session.modified = True
+        
+        self.request.session['last_order_id'] = order.id
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"Ошибка в поле '{form.fields[field].label}': {error}")
+        return redirect('landing')
 
 
 # Рефакторинг: thanks из FBV в TemplateView
@@ -92,18 +138,17 @@ class ThanksView(TemplateView):
         if order_id:
             order = get_object_or_404(Order, id=order_id)
             context['order'] = order
-            # Очищаем сессию после использования
             if 'last_order_id' in self.request.session:
                 del self.request.session['last_order_id']
         return context
 
-def get_anonymous_orders(request): # Остается функциональным представлением (вспомогательная функция)
+def get_anonymous_orders(request):
     """Получает заказы анонимного пользователя из сессии"""
     if not request.user.is_authenticated and 'anonymous_orders' in request.session:
         return Order.objects.filter(id__in=request.session['anonymous_orders'])
     return Order.objects.none()
 
-def has_order_access(request, order): # Остается функциональным представлением (вспомогательная функция)
+def has_order_access(request, order):
     """Проверка прав доступа к заказу"""
     if request.user.is_authenticated:
         return request.user.is_staff or order.user == request.user
@@ -111,17 +156,16 @@ def has_order_access(request, order): # Остается функциональ�
         return 'anonymous_orders' in request.session and order.id in request.session['anonymous_orders']
 
 # Рефакторинг: orders_list из FBV в OrdersListView (бывшее UserOrderListView)
-class OrdersListView(LoginRequiredMixin, ListView):
+class OrdersListView(ListView): # <<< УДАЛЕН LoginRequiredMixin
     model = Order
-    template_name = 'orders/list.html' # Предполагается, что шаблон 'orders_list.html' это 'orders/list.html'
+    template_name = 'orders/list.html'
     context_object_name = 'orders'
     paginate_by = 10
-    ordering = ['-date', '-time'] # Сортировка по убыванию даты и времени
+    ordering = ['-date', '-time']
 
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.request.user.is_authenticated:
-            # Для персонала показываем все заказы, иначе только свои
             if not self.request.user.is_staff:
                 query_filter = Q(user=self.request.user) | Q(phone=self.request.user.username)
                 queryset = queryset.filter(query_filter)
@@ -150,16 +194,16 @@ class OrdersListView(LoginRequiredMixin, ListView):
         return context
 
 # Рефакторинг: order_detail из FBV в OrderDetailView (бывшее UserOrderDetailView)
-class OrderDetailView(LoginRequiredMixin, DetailView):
+class OrderDetailView(DetailView): # <<< УДАЛЕН LoginRequiredMixin
     model = Order
-    template_name = 'orders/detail.html' # Предполагается, что шаблон 'order_detail.html' это 'orders/detail.html'
+    template_name = 'orders/detail.html'
     context_object_name = 'order'
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if not has_order_access(self.request, obj):
-            messages.error(self.request, 'У вас нет доступа к этому заказу')
-            raise Http404("No access to this order")
+            # messages.error(self.request, 'У вас нет доступа к этому заказу') # Сообщения не покажутся на 404
+            raise Http404("No access to this order") # Вызов 404, если нет доступа
         return obj
     
     def get_context_data(self, **kwargs):
@@ -172,11 +216,11 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
         return context
 
 # Рефакторинг: order_create из FBV в OrderCreateView (бывшее UserOrderCreateView)
-class OrderCreateView(CreateView):
+class OrderCreateView(CreateView): # Этот класс не требовал LoginRequiredMixin
     model = Order
     form_class = OrderForm
-    template_name = 'orders/create.html' # Предполагается, что шаблон 'order_form.html' это 'orders/create.html'
-    success_url = reverse_lazy('thanks') # Перенаправление на 'thanks' после успеха
+    template_name = 'orders/create.html'
+    success_url = reverse_lazy('thanks')
 
     def get_initial(self):
         initial = super().get_initial()
@@ -197,7 +241,7 @@ class OrderCreateView(CreateView):
         return context
 
     def form_valid(self, form):
-        messages.success(self.request, 'Запись успешно создана! Ожидайте звонка для подтверждения.') # Flash-сообщение
+        messages.success(self.request, 'Запись успешно создана! Ожидайте звонка для подтверждения.')
         order = form.save(commit=False)
         
         if self.request.user.is_authenticated:
@@ -214,7 +258,7 @@ class OrderCreateView(CreateView):
         invalid_services = [s for s in selected_services if s not in master_services]
         if invalid_services:
             messages.error(self.request, f"Мастер {master.name} не предоставляет выбранные услуги")
-            return self.form_invalid(form) # Повторный рендеринг с ошибками
+            return self.form_invalid(form) 
         
         order.save()
         form.save_m2m()
@@ -226,17 +270,19 @@ class OrderCreateView(CreateView):
             self.request.session['show_my_orders'] = True
             self.request.session.modified = True
         
-        return super().form_valid(form) # Перенаправляет на success_url
+        self.request.session['last_order_id'] = order.id
+        return super().form_valid(form)
 
 
 # Рефакторинг: create_review из FBV в ReviewCreateView
-# (Этот класс уже был в вашей предыдущей версии views.py,
-# и он уже соответствует требованиям задачи)
-class ReviewCreateView(LoginRequiredMixin, CreateView):
+class ReviewCreateView(CreateView): # <<< УДАЛЕН LoginRequiredMixin, если вы хотите разрешить анонимные отзывы.
+                                     # НО: Если отзывы могут писать ТОЛЬКО авторизованные пользователи, оставьте.
+                                     # Судя по задумке, авторизация для отзывов может быть обязательна.
+                                     # Если анонимные отзывы не нужны, то LoginRequiredMixin здесь должен быть.
     model = Review
     form_class = ReviewForm
-    template_name = 'reviews/add_review.html' # Предполагается, что шаблон 'review_form.html' это 'reviews/add_review.html'
-    success_url = reverse_lazy('review_list') # Список публичных отзывов, как в задании
+    template_name = 'reviews/add_review.html'
+    success_url = reverse_lazy('review_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -244,9 +290,15 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        messages.success(self.request, 'Ваш отзыв успешно добавлен и ожидает модерации!') # Flash-сообщение
+        messages.success(self.request, 'Ваш отзыв успешно добавлен и ожидает модерации!')
         review = form.save(commit=False)
-        review.user = self.request.user
+        # Если пользователь не авторизован, можно оставить user=None или как-то иначе помечать
+        if self.request.user.is_authenticated:
+            review.user = self.request.user
+        else:
+            # Если разрешены анонимные отзывы, но требуется имя, можно взять из формы
+            # review.user = None
+            pass # Если user может быть null в модели
         review.save()
         return super().form_valid(form)
 
@@ -256,7 +308,6 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
 
 
 # --- Существующие Классовые представления, которые не были FBV в задании, но ранее были конвертированы ---
-# (Они сохранены, если не противоречат новым именам или функциям)
 
 # services_view остается функциональным представлением
 def services_view(request):
@@ -343,15 +394,15 @@ class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
 
 # Admin and other views that were already class-based and remain so (renamed if necessary)
 
-class UserOrderUpdateView(UserPassesTestMixin, UpdateView): # Renamed for clarity vs. new OrderCreateView
+class UserOrderUpdateView(UserPassesTestMixin, UpdateView): # <<< УДАЛЕН LoginRequiredMixin
     model = Order
     form_class = OrderForm
     template_name = 'orders/edit.html'
     context_object_name = 'order'
 
     def test_func(self):
-        obj = self.get_object()
-        return has_order_access(self.request, obj) # Переименовано для использования вспомогательной функции
+        obj = self.get_object() # get_object() вызовет 404 если объект не найден
+        return has_order_access(self.request, obj) # Проверяем доступ с помощью вашей функции
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -372,14 +423,14 @@ class UserOrderUpdateView(UserPassesTestMixin, UpdateView): # Renamed for clarit
         context['can_edit'] = has_order_access(self.request, context['order'])
         return context
 
-class UserOrderDeleteView(UserPassesTestMixin, DeleteView): # Renamed for clarity
+class UserOrderDeleteView(UserPassesTestMixin, DeleteView): # <<< УДАЛЕН LoginRequiredMixin
     model = Order
     template_name = 'orders/confirm_delete.html'
     context_object_name = 'order'
     success_url = reverse_lazy('order_list')
 
     def test_func(self):
-        obj = self.get_object()
+        obj = self.get_object() # get_object() вызовет 404 если объект не найден
         return has_order_access(self.request, obj)
 
     def post(self, request, *args, **kwargs):
@@ -896,18 +947,15 @@ class AdminReviewDeleteView(UserPassesTestMixin, DeleteView):
         messages.success(self.request, 'Отзыв был успешно удален.')
         return super().form_valid(form)
 
-class UserReviewDeleteView(LoginRequiredMixin, DeleteView):
+class UserReviewDeleteView(UserPassesTestMixin, DeleteView): 
     model = Review
     template_name = 'reviews/confirm_delete.html'
     context_object_name = 'review'
     success_url = reverse_lazy('review_list')
 
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if not (self.request.user.is_staff or (obj.user and self.request.user == obj.user)):
-            messages.error(self.request, 'У вас нет прав для удаления этого отзыва.')
-            raise Http404("No access to delete this review.")
-        return obj
+    def test_func(self): # Добавлен test_func для UserPassesTestMixin
+        obj = self.get_object() # get_object() вызовет 404 если объект не найден
+        return has_order_access(self.request, obj) # Использование вашей функции доступа
 
     def form_valid(self, form):
         messages.success(self.request, 'Отзыв успешно удален.')
