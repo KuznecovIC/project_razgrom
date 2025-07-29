@@ -8,6 +8,12 @@ from django.contrib.auth import get_user_model
 from .models import Order, Master, Service, Review
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import (
+    PasswordResetForm, 
+    SetPasswordForm,
+    PasswordChangeForm,
+)
+
 User = get_user_model()
 
 class RegisterForm(UserCreationForm):
@@ -392,3 +398,66 @@ class ServiceForm(forms.ModelForm):
         if duration < 15:
             raise forms.ValidationError('Длительность должна быть не менее 15 минут')
         return duration
+    
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Ваш email',
+            'autocomplete': 'email'
+        })
+    )
+
+class CustomSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        label="Новый пароль",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Новый пароль',
+            'autocomplete': 'new-password'
+        }),
+        strip=False,
+        help_text=None,  # Убираем подсказки
+    )
+    new_password2 = forms.CharField(
+        label="Подтверждение пароля",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Подтвердите новый пароль',
+            'autocomplete': 'new-password'
+        }),
+        help_text=None,  # Убираем подсказки
+    )
+
+class UserPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="Текущий пароль",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Текущий пароль',
+            'autocomplete': 'current-password'
+        }),
+    )
+    new_password1 = forms.CharField(
+        label="Новый пароль",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Новый пароль',
+            'autocomplete': 'new-password'
+        }),
+        strip=False,
+        help_text=None,
+    )
+    new_password2 = forms.CharField(
+        label="Подтверждение пароля",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Подтвердите новый пароль',
+            'autocomplete': 'new-password'
+        }),
+        help_text=None,
+    )

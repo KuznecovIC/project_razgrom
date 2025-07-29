@@ -114,11 +114,10 @@ SESSION_COOKIE_AGE = 1209600
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
-EMAIL_USE_TLS = False  # MailHog не использует шифрование
-EMAIL_HOST_USER = ''   # Оставьте пустым
-EMAIL_HOST_PASSWORD = ''  # Оставьте пустым
-DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'  # Может быть любым
-
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = 'noreply@barbershop.com'
 # Other
 SITE_ID = 1
 SITE_URL = 'http://localhost:8000'

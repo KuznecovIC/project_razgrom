@@ -21,7 +21,7 @@ from django.urls import reverse_lazy
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.models import Session
-
+from .forms import CustomPasswordResetForm, CustomSetPasswordForm
 # Импорты для Class-Based Views
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView, FormView, RedirectView
@@ -960,3 +960,24 @@ class UserReviewDeleteView(UserPassesTestMixin, DeleteView):
     def form_valid(self, form):
         messages.success(self.request, 'Отзыв успешно удален.')
         return super().form_valid(form)
+    
+
+class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = 'registration/password_reset_confirm.html'
+    form_class = CustomSetPasswordForm  # Используем нашу кастомную форму
+    success_url = reverse_lazy('password_reset_complete')
+
+    def form_valid(self, form):
+        logger.info("Password reset form is valid")
+        response = super().form_valid(form)
+        user = form.save()
+        logger.info(f"Password changed for user {user.username}")
+        messages.success(self.request, 'Ваш пароль был успешно изменен!')
+        return response
+    
+class CustomPasswordResetView(auth_views.PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    email_template_name = 'registration/password_reset_email.html'
+    form_class = CustomPasswordResetForm  # Используем нашу кастомную форму
+    success_url = reverse_lazy('password_reset_done')
+    subject_template_name = 'registration/password_reset_subject.txt'
