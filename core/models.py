@@ -2,7 +2,6 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator, FileExtensionValidator
 from django.utils import timezone
 from django.db import connection
-from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
@@ -10,7 +9,7 @@ from datetime import datetime
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 import os
-
+from django.conf import settings
 class Service(models.Model):
     """Модель услуги барбершопа с расширенными возможностями"""
     
@@ -247,7 +246,7 @@ class Order(models.Model):
         verbose_name="Дата создания"
     )
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
         related_name='orders',
@@ -317,7 +316,7 @@ class Review(models.Model):
         verbose_name="Мастер"
     )
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

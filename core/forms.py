@@ -16,60 +16,20 @@ from django.contrib.auth.forms import (
 
 User = get_user_model()
 
-class RegisterForm(UserCreationForm):
-    email = forms.EmailField(
-        label='Email',
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'example@mail.com'
-        })
-    )
-
+class UserRegisterForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
-        widgets = {
-            'username': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Логин'
-            }),
-        }
+        fields = ('username', 'email', 'password1', 'password2')
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Пароль'
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Подтверждение пароля'
-        })
+class UserLoginForm(AuthenticationForm):
+    remember_me = forms.BooleanField(required=False)
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
-        if commit:
-            user.save()
-        return user
-    
-class LoginForm(AuthenticationForm):
-    remember_me = forms.BooleanField(
-        required=False,
-        initial=True,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Логин'
-        })
-        self.fields['password'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Пароль'
-        })
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'phone', 'avatar')
 
 class OrderForm(forms.ModelForm):
     services = forms.ModelMultipleChoiceField(
@@ -184,7 +144,6 @@ class OrderForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         
-        # Привязываем пользователя если он авторизован
         if self.request_user and self.request_user.is_authenticated:
             instance.user = self.request_user
         
@@ -228,7 +187,6 @@ class OrderStatusForm(forms.ModelForm):
             })
         }
 
-# ================== ФОРМЫ ОТЗЫВОВ ==================
 class ReviewForm(forms.ModelForm):
     RATING_CHOICES = [
         (1, '1 - Плохо'),
@@ -295,7 +253,6 @@ class ReviewPublishForm(forms.ModelForm):
             })
         }
 
-# ================== ФОРМЫ МАСТЕРОВ ==================
 class MasterForm(forms.ModelForm):
     services = forms.ModelMultipleChoiceField(
         queryset=Service.objects.all(),
@@ -348,7 +305,6 @@ class MasterForm(forms.ModelForm):
             raise forms.ValidationError('Введите корректный номер телефона (10 или 11 цифр)')
         return phone
 
-# ================== ФОРМЫ УСЛУГ ==================
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
@@ -418,7 +374,7 @@ class CustomSetPasswordForm(SetPasswordForm):
             'autocomplete': 'new-password'
         }),
         strip=False,
-        help_text=None,  # Убираем подсказки
+        help_text=None,
     )
     new_password2 = forms.CharField(
         label="Подтверждение пароля",
@@ -428,7 +384,7 @@ class CustomSetPasswordForm(SetPasswordForm):
             'placeholder': 'Подтвердите новый пароль',
             'autocomplete': 'new-password'
         }),
-        help_text=None,  # Убираем подсказки
+        help_text=None,
     )
 
 class UserPasswordChangeForm(PasswordChangeForm):
