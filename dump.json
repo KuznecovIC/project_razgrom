@@ -1,0 +1,676 @@
+[
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": 1,
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": 1,
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": 1,
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": 1,
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": 2,
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": 2,
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": 2,
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": 2,
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": 3,
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": 3,
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": 3,
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": 3,
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": 4,
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": 4,
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": 4,
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": 4,
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add session",
+    "content_type": 5,
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change session",
+    "content_type": 5,
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": 5,
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view session",
+    "content_type": 5,
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add Мастер",
+    "content_type": 6,
+    "codename": "add_master"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change Мастер",
+    "content_type": 6,
+    "codename": "change_master"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete Мастер",
+    "content_type": 6,
+    "codename": "delete_master"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view Мастер",
+    "content_type": 6,
+    "codename": "view_master"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add Отзыв",
+    "content_type": 7,
+    "codename": "add_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change Отзыв",
+    "content_type": 7,
+    "codename": "change_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete Отзыв",
+    "content_type": 7,
+    "codename": "delete_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view Отзыв",
+    "content_type": 7,
+    "codename": "view_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Может модерировать отзывы",
+    "content_type": 7,
+    "codename": "can_moderate"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can add Услуга",
+    "content_type": 8,
+    "codename": "add_service"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can change Услуга",
+    "content_type": 8,
+    "codename": "change_service"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can delete Услуга",
+    "content_type": 8,
+    "codename": "delete_service"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 33,
+  "fields": {
+    "name": "Can view Услуга",
+    "content_type": 8,
+    "codename": "view_service"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 34,
+  "fields": {
+    "name": "Can add Запись",
+    "content_type": 9,
+    "codename": "add_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 35,
+  "fields": {
+    "name": "Can change Запись",
+    "content_type": 9,
+    "codename": "change_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 36,
+  "fields": {
+    "name": "Can delete Запись",
+    "content_type": 9,
+    "codename": "delete_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 37,
+  "fields": {
+    "name": "Can view Запись",
+    "content_type": 9,
+    "codename": "view_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 38,
+  "fields": {
+    "name": "Can add Пользователь",
+    "content_type": 10,
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 39,
+  "fields": {
+    "name": "Can change Пользователь",
+    "content_type": 10,
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 40,
+  "fields": {
+    "name": "Can delete Пользователь",
+    "content_type": 10,
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 41,
+  "fields": {
+    "name": "Can view Пользователь",
+    "content_type": 10,
+    "codename": "view_user"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 1,
+  "fields": {
+    "app_label": "admin",
+    "model": "logentry"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 2,
+  "fields": {
+    "app_label": "auth",
+    "model": "permission"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 3,
+  "fields": {
+    "app_label": "auth",
+    "model": "group"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 4,
+  "fields": {
+    "app_label": "contenttypes",
+    "model": "contenttype"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 5,
+  "fields": {
+    "app_label": "sessions",
+    "model": "session"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 6,
+  "fields": {
+    "app_label": "core",
+    "model": "master"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 7,
+  "fields": {
+    "app_label": "core",
+    "model": "review"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 8,
+  "fields": {
+    "app_label": "core",
+    "model": "service"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 9,
+  "fields": {
+    "app_label": "core",
+    "model": "order"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 10,
+  "fields": {
+    "app_label": "users",
+    "model": "user"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "1u1tj3bcpnxzbb31tzexkn8bqpcnne6s",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hChtBlcuvcMZJgZpGogKe2q8e5K0oVu_3vv7yrgtuawNVnCzOqirDr9bhHpKaUDfmC5V021rMscdVf0QZu-VZbX9XD_DjK23GuAhH704Ecnjg0Ymc4iaaLIFgwxWs8OBiDkCGgiJmEYEg2cvppV7w8DZzmd:1uj2Rd:jXmd6PV2IFqSmw_jiQZpGvc4bg3KnsbWlHAFn6Zdws4",
+    "expire_date": "2025-08-18T21:10:09.625Z"
+  }
+},
+{
+  "model": "core.service",
+  "pk": 1,
+  "fields": {
+    "name": "Мужская стрижка",
+    "description": "",
+    "price": "1200.00",
+    "duration": 30,
+    "category": "HC",
+    "is_popular": true,
+    "is_active": true,
+    "image": "",
+    "created_at": "2025-08-02T08:15:20.188Z",
+    "updated_at": "2025-08-02T08:15:20.188Z"
+  }
+},
+{
+  "model": "core.service",
+  "pk": 2,
+  "fields": {
+    "name": "под нолик",
+    "description": "для дяди толика",
+    "price": "1500.00",
+    "duration": 30,
+    "category": "HC",
+    "is_popular": true,
+    "is_active": true,
+    "image": "",
+    "created_at": "2025-08-02T08:28:24.562Z",
+    "updated_at": "2025-08-02T08:28:24.658Z"
+  }
+},
+{
+  "model": "core.master",
+  "pk": 1,
+  "fields": {
+    "name": "Алексей 'Бритва' Петров",
+    "photo": "masters/master1.jpg",
+    "phone": "",
+    "email": null,
+    "description": "Специалист по классическим стрижкам",
+    "instagram": "",
+    "experience": 8,
+    "is_active": true,
+    "services": []
+  }
+},
+{
+  "model": "core.master",
+  "pk": 2,
+  "fields": {
+    "name": "Дмитрий 'Стиль' Иванов",
+    "photo": "masters/master2.jpg",
+    "phone": "",
+    "email": null,
+    "description": "Эксперт по бородам",
+    "instagram": "",
+    "experience": 5,
+    "is_active": true,
+    "services": []
+  }
+},
+{
+  "model": "core.master",
+  "pk": 3,
+  "fields": {
+    "name": "парихмахер дядя толик",
+    "photo": "masters/дядя_толик_1508zd6.jpg",
+    "phone": "8236383490",
+    "email": "test@mail.com",
+    "description": "подстриги меня под нолик",
+    "instagram": "@test",
+    "experience": 1,
+    "is_active": true,
+    "services": [
+      2
+    ]
+  }
+},
+{
+  "model": "core.order",
+  "pk": 1,
+  "fields": {
+    "client_name": "opher",
+    "phone": "12345678910",
+    "email": null,
+    "comment": "test",
+    "date": "2025-08-03",
+    "time": "12:30:00",
+    "master": 3,
+    "status": "confirmed",
+    "created_at": "2025-08-02T08:29:23.583Z",
+    "user": 1,
+    "services": [
+      2
+    ]
+  }
+},
+{
+  "model": "core.order",
+  "pk": 5,
+  "fields": {
+    "client_name": "Руслан дядя асиф",
+    "phone": "12345678910",
+    "email": null,
+    "comment": "1",
+    "date": "2025-08-05",
+    "time": "01:04:00",
+    "master": 3,
+    "status": "completed",
+    "created_at": "2025-08-04T21:04:59.846Z",
+    "user": 2,
+    "services": [
+      2
+    ]
+  }
+},
+{
+  "model": "core.review",
+  "pk": 1,
+  "fields": {
+    "text": "1",
+    "client_name": "opher",
+    "master": 3,
+    "user": 1,
+    "photo": "",
+    "created_at": "2025-08-02T08:38:13.382Z",
+    "rating": 5,
+    "is_published": false,
+    "ai_checked_status": "ai_cancelled"
+  }
+},
+{
+  "model": "core.review",
+  "pk": 2,
+  "fields": {
+    "text": "все понравилось",
+    "client_name": "opher",
+    "master": 3,
+    "user": 1,
+    "photo": "",
+    "created_at": "2025-08-02T08:39:05.286Z",
+    "rating": 5,
+    "is_published": true,
+    "ai_checked_status": "ai_checked_true"
+  }
+},
+{
+  "model": "core.review",
+  "pk": 3,
+  "fields": {
+    "text": "почти все понравилось но стрижка шла слишком долго",
+    "client_name": "opher",
+    "master": 3,
+    "user": 1,
+    "photo": "",
+    "created_at": "2025-08-03T07:49:46.906Z",
+    "rating": 4,
+    "is_published": true,
+    "ai_checked_status": "ai_checked_true"
+  }
+},
+{
+  "model": "core.review",
+  "pk": 8,
+  "fields": {
+    "text": "пидорас",
+    "client_name": "руслан",
+    "master": 3,
+    "user": 2,
+    "photo": "",
+    "created_at": "2025-08-04T21:04:15.852Z",
+    "rating": 5,
+    "is_published": false,
+    "ai_checked_status": "ai_cancelled"
+  }
+},
+{
+  "model": "users.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$SdQOrfb6ws8umZeSygWY9j$v8rbFHihT5Ur14KLkBP754WrTNMBLNGUcd6TYKDFMpM=",
+    "last_login": "2025-08-04T21:05:25.853Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "test@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-08-02T08:26:41.855Z",
+    "phone": "",
+    "avatar": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$Cf2b4JL0fJx2Wktz3K2kQ5$YbUD1KcdZMaCUNjEuKFmu+7eYoRHObsv1IcurTy2F/g=",
+    "last_login": "2025-08-04T21:10:09.391Z",
+    "is_superuser": false,
+    "username": "Тест_аккаунт2",
+    "first_name": "",
+    "last_name": "",
+    "email": "test3@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-03T07:38:45.804Z",
+    "phone": "",
+    "avatar": "",
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]

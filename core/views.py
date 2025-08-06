@@ -7,13 +7,13 @@ from django.db.models import Q
 from django.http import JsonResponse, Http404
 from .models import Master, Service, Order, Review
 from .forms import OrderForm, ReviewForm, MasterForm, ServiceForm, OrderStatusForm
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date # <-- Добавлен импорт date
 from django.contrib.auth import login, logout, authenticate, get_user_model
 import logging
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView, RedirectView # Добавлен импорт RedirectView
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView, RedirectView
 from django.contrib.auth.mixins import UserPassesTestMixin
 from .forms import CustomPasswordResetForm, CustomSetPasswordForm
 from django.contrib.auth.views import (
@@ -618,6 +618,12 @@ class AdminOrderListView(UserPassesTestMixin, ListView):
 def order_update_status(request, pk):
     order = get_object_or_404(Order, pk=pk)
     
+    # Проверка даты заказа перед обработкой формы
+    today = date.today()
+    if order.date < today:
+        messages.error(request, 'Этот заказ был создан давно, и его статус нельзя изменить.')
+        return redirect('admin_order_list')  # Убедитесь, что 'admin_panel:admin_order_list' - это правильный URL-путь
+        
     if request.method == 'POST':
         form = OrderStatusForm(request.POST, instance=order)
         if form.is_valid():
@@ -627,7 +633,7 @@ def order_update_status(request, pk):
                 order.save()
                 
                 messages.success(request, f'Статус заказа #{order.id} успешно изменен на "{order.get_status_display()}"')
-                return redirect('admin_order_detail', order_id=order.id)
+                return redirect('admin_panel:admin_order_detail', order_id=order.id)
                 
             except Exception as e:
                 messages.error(request, f'Ошибка при сохранении: {str(e)}')
